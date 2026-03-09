@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/react";
 import { useRef, useState } from "react";
-import { useUploadImageMutation } from "../hooks/useUploadImage";
-import { ACCEPT_IMAGE_TYPES } from "../hooks/imageValidation";
+import { uploadImageFile } from "../hooks/useUploadImage";
+import { validateImageFile, ACCEPT_IMAGE_TYPES } from "../hooks/imageValidation";
 import { BASE_URL } from "../constants";
 import "./ImageToolbar.css";
 
@@ -12,9 +12,8 @@ type Props = {
 
 export default function ImageToolbar({ editor, onSave }: Props) {
   const [imageUrl, setImageUrl] = useState("");
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isPending: isUploading, mutate: uploadImage } =
-    useUploadImageMutation();
 
   if (!editor) return null;
 
@@ -26,18 +25,53 @@ export default function ImageToolbar({ editor, onSave }: Props) {
     onSave();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    uploadImage(file, {
-      onSuccess: ({ url }) => {
-        editor.chain().focus().setImage({ src: `${BASE_URL}${url}` }).run();
-        onSave();
-      },
-      onError: (error) => {
-        alert(`エラー: ${error.message}`);
-      },
-    });
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileList = Array.from(files);
+
+    // バリデーション: 全ファイルを事前チェック
+    const errors: string[] = [];
+    for (const file of fileList) {
+      const error = validateImageFile(file);
+      if (error) {
+        errors.push(`${file.name}: ${error}`);
+      }
+    }
+    if (errors.length > 0) {
+      alert(`エラー:\n${errors.join("\n")}`);
+      e.target.value = "";
+      return;
+    }
+
+    setIsUploading(true);
+
+    // 全ファイルを並列アップロード
+    const results = await Promise.allSettled(
+      fileList.map((file) => uploadImageFile(file)),
+    );
+
+    const uploadErrors: string[] = [];
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      if (result.status === "fulfilled") {
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: `${BASE_URL}${result.value.url}` })
+          .run();
+      } else {
+        uploadErrors.push(`${fileList[i].name}: ${result.reason.message}`);
+      }
+    }
+
+    if (uploadErrors.length > 0) {
+      alert(`アップロードエラー:\n${uploadErrors.join("\n")}`);
+    }
+
+    onSave();
+    setIsUploading(false);
     e.target.value = "";
   };
 
@@ -61,6 +95,7 @@ export default function ImageToolbar({ editor, onSave }: Props) {
       <input
         type="file"
         accept={ACCEPT_IMAGE_TYPES}
+        multiple
         ref={fileInputRef}
         onChange={handleFileChange}
         className="imageFileInput"
