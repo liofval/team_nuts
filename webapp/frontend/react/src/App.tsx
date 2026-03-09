@@ -5,6 +5,7 @@ import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
 import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
 import { useRef, useState } from "react";
 import "./App.css";
 
@@ -85,8 +86,24 @@ function Page({ title: initialTitle, content }: PressRelease) {
   const [title, setTitle] = useState(() => initialTitle);
   const [imageUrl, setImageUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text, Image],
+    extensions: [
+      Document,
+      Heading,
+      Paragraph,
+      Text,
+      Image,
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      }),
+    ],
     content,
   });
 
@@ -95,10 +112,37 @@ function Page({ title: initialTitle, content }: PressRelease) {
     useUploadImageMutation();
 
   const handleSave = () => {
+    if (!editor) return;
     save({
       title,
       content: JSON.stringify(editor.getJSON()),
     });
+  };
+
+  const setLink = () => {
+    if (!editor) return;
+
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("リンク先URLを入力してください", previousUrl);
+
+    if (url === null) return;
+
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    if (!/^https?:\/\//.test(url)) {
+      window.alert("URLはhttpまたはhttpsで始まる必要があります");
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: url })
+      .run();
   };
 
   const handleInsertImage = () => {
@@ -148,6 +192,11 @@ function Page({ title: initialTitle, content }: PressRelease) {
               placeholder="タイトルを入力してください"
               className="titleInput"
             />
+          </div>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button type="button" onClick={setLink} disabled={!editor}>
+              リンク追加/編集
+            </button>
           </div>
           <div className="imageInsertWrapper">
             <input
