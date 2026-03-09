@@ -75,6 +75,48 @@ curl -X POST http://localhost:8080/press-releases/1 \
 
 ---
 
+### POST /uploads
+
+ローカル画像ファイルをサーバーにアップロードします。アップロードした画像は `/uploads/{filename}` で配信されます。
+
+**リクエスト例:**
+```bash
+curl -X POST http://localhost:8080/uploads \
+  -F "image=@/path/to/image.png"
+```
+
+**レスポンス例（200 OK）:**
+```json
+{
+  "url": "/uploads/my_image_a1b2c3d4e5f6.png"
+}
+```
+
+**エラーレスポンス（400 Bad Request）:**
+```json
+{
+  "code": "INVALID_FILE_TYPE",
+  "message": "Only JPEG, PNG, GIF, WebP are allowed"
+}
+```
+
+**制限事項:**
+- 最大ファイルサイズ: 10MB
+- 許可形式: JPEG / PNG / GIF / WebP
+- ファイル種別はMIMEタイプで判定（拡張子ではない）
+
+---
+
+### GET /uploads/:filename
+
+アップロード済みの画像ファイルを取得します（静的ファイル配信）。
+
+```bash
+curl http://localhost:8080/uploads/my_image_a1b2c3d4e5f6.png
+```
+
+---
+
 ## データベーススキーマ
 
 ### press_releases テーブル

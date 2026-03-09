@@ -28,9 +28,12 @@ services:
       DB_USER: press_release
       DB_PASSWORD: press_release
       DB_NAME: press_release_db
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       postgresql:
         condition: service_healthy
 
 volumes:
   postgres_data:
+  uploads_data:
