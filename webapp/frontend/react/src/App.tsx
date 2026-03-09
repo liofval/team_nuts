@@ -1,13 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEditor, EditorContent } from "@tiptap/react";
-import Heading from "@tiptap/extension-heading";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
+import Heading from "@tiptap/extension-heading";
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
+import Underline from "@tiptap/extension-underline";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
 import { useState } from "react";
+import EditorToolbar from "./components/EditorToolbar";
 import "./App.css";
 
 const queryKey = ["fetch-press-release"];
@@ -67,12 +73,27 @@ type PressRelease = {
 
 function Page({ title: initialTitle, content }: PressRelease) {
   const [title, setTitle] = useState(() => initialTitle);
+  const [imageUrl, setImageUrl] = useState("");
+
   const editor = useEditor({
     extensions: [
       Document,
       Heading,
       Paragraph,
       Text,
+      Bold,
+      Italic,
+      Underline,
+      Image,
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      }),
       BulletList,
       OrderedList,
       ListItem,
@@ -83,10 +104,44 @@ function Page({ title: initialTitle, content }: PressRelease) {
   const { isPending, mutate } = useSavePressReleaseMutation();
 
   const handleSave = () => {
+    if (!editor) return;
     mutate({
       title,
       content: JSON.stringify(editor.getJSON()),
     });
+  };
+
+  const setLink = () => {
+    if (!editor) return;
+
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("リンク先URLを入力してください", previousUrl);
+
+    if (url === null) return;
+
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    if (!/^https?:\/\//.test(url)) {
+      window.alert("URLはhttpまたはhttpsで始まる必要があります");
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: url })
+      .run();
+  };
+
+  const handleInsertImage = () => {
+    const url = imageUrl.trim();
+    if (!url) return;
+    editor.chain().focus().setImage({ src: url }).run();
+    setImageUrl("");
   };
 
   return (
@@ -111,13 +166,14 @@ function Page({ title: initialTitle, content }: PressRelease) {
               className="titleInput"
             />
           </div>
+          <EditorToolbar editor={editor ?? null} />
 
-          {/* ツールバー */}
+          {/* リスト・リンクツールバー */}
           <div className="toolbar">
             <button
               type="button"
-              onClick={() => editor.chain().focus().toggleBulletList().run()}
-              className={`toolbarButton${editor.isActive("bulletList") ? " toolbarButton--active" : ""}`}
+              onClick={() => editor?.chain().focus().toggleBulletList().run()}
+              className={`toolbarButton${editor?.isActive("bulletList") ? " toolbarButton--active" : ""}`}
               title="箇条書き (Ctrl+Shift+8)"
             >
               <BulletListIcon />
@@ -126,15 +182,36 @@ function Page({ title: initialTitle, content }: PressRelease) {
 
             <button
               type="button"
-              onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              className={`toolbarButton${editor.isActive("orderedList") ? " toolbarButton--active" : ""}`}
+              onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+              className={`toolbarButton${editor?.isActive("orderedList") ? " toolbarButton--active" : ""}`}
               title="番号付きリスト (Ctrl+Shift+7)"
             >
               <OrderedListIcon />
               番号付き
             </button>
+
+            <button type="button" onClick={setLink} disabled={!editor}>
+              リンク追加/編集
+            </button>
           </div>
 
+          <div className="imageInsertWrapper">
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleInsertImage()}
+              placeholder="画像URLを入力してください"
+              className="imageUrlInput"
+            />
+            <button
+              onClick={handleInsertImage}
+              disabled={!imageUrl.trim()}
+              className="imageInsertButton"
+            >
+              画像を挿入
+            </button>
+          </div>
           <EditorContent editor={editor} />
         </div>
       </main>

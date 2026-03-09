@@ -27,3 +27,9 @@ body {
 #root {
   min-height: 100vh;
 }
+
+/* 追加：エディタ内のリンクの見た目（必要なら） */
+.tiptap a {
+  color: #2563eb;
+  text-decoration: underline;
+}
