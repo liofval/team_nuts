@@ -13,7 +13,11 @@
 1. `GetDB()` でDB接続プールを初期化
 2. Chi ルーターを初期化
 3. ミドルウェアを設定（ログ出力・エラー復旧・CORS）
-4. ルートを定義（GET/POST `/press-releases/{id}`）
+4. ルートを定義
+   - `GET /press-releases/{id}`
+   - `POST /press-releases/{id}`
+   - `POST /uploads`（画像アップロード）
+   - `GET /uploads/*`（アップロード済み画像の静的配信）
 5. ポート 8080 でサーバー起動
 
 ---
@@ -38,6 +42,18 @@
 4. 指定IDのレコードが存在するか確認（なければ404）
 5. UPDATE クエリを実行
 6. 更新後のデータをSELECTして返す
+```
+
+#### UploadImageHandler（POST /uploads）
+
+```
+1. リクエストサイズチェック（最大 10MB）
+2. マルチパートフォームをパースし "image" フィールドを取得
+3. ファイル先頭512バイトを読んでMIMEタイプを判定
+4. JPEG / PNG / GIF / WebP 以外は 400 を返す
+5. 元のファイル名をサニタイズ + 16バイトの乱数でユニークなファイル名を生成
+6. ./uploads/ ディレクトリに保存（なければ自動作成）
+7. { "url": "/uploads/{filename}" } を返す
 ```
 
 ---
@@ -89,7 +105,12 @@ services:
   app:              # Go バックエンド
     build: ./go
     ports: 8080
+    volumes: uploads_data:/app/uploads  # アップロード画像を永続化
     depends_on: postgresql が healthy になるまで待機
+
+volumes:
+  postgres_data:    # DBデータ永続化
+  uploads_data:     # アップロード画像永続化
 ```
 
 ### コンテナの起動順序
