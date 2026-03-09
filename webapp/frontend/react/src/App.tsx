@@ -4,6 +4,7 @@ import {
   usePressReleaseQuery,
   useSavePressReleaseMutation,
 } from "./hooks/usePressRelease";
+import { useAutoSave } from "./hooks/useAutoSave";
 import { editorExtensions } from "./extensions";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
@@ -32,6 +33,9 @@ function Page({ title: initialTitle, content }: PageProps) {
   });
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
+
+  // 5秒ごとの自動保存（保存処理を外から渡す）
+  useAutoSave(editor ?? null, title, save);
 
   const handleSave = () => {
     if (!editor) return;
