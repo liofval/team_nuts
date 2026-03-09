@@ -115,6 +115,30 @@
   cursor: not-allowed;
 }
 
+.imageFileInput {
+  display: none;
+}
+
+.imageUploadButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background-color: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.imageUploadButton:hover:not(:disabled) {
+  background-color: #5a32a3;
+}
+
+.imageUploadButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
 /* Tiptapエディターのスタイル */
 .tiptap {
   outline: none;

@@ -37,6 +37,10 @@ func main() {
 	// ルート定義
 	r.Get("/press-releases/{id}", GetPressReleaseHandler)
 	r.Post("/press-releases/{id}", SavePressReleaseHandler)
+	r.Post("/uploads", UploadImageHandler)
+
+	// アップロード済み画像の静的ファイル配信
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(uploadsDir))))
 
 	// サーバー起動
 	port := ":8080"
