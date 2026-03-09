@@ -1,8 +1,7 @@
 import type { Editor } from "@tiptap/react";
 import { useRef, useState } from "react";
-import { uploadImageFile } from "../hooks/useUploadImage";
+import { uploadImageToS3 } from "../hooks/useUploadImageS3";
 import { validateImageFile, ACCEPT_IMAGE_TYPES } from "../hooks/imageValidation";
-import { BASE_URL } from "../constants";
 import "./ImageToolbar.css";
 
 type Props = {
@@ -47,20 +46,16 @@ export default function ImageToolbar({ editor, onSave }: Props) {
 
     setIsUploading(true);
 
-    // 全ファイルを並列アップロード
+    // 全ファイルを並列アップロード（S3プリサイン経由）
     const results = await Promise.allSettled(
-      fileList.map((file) => uploadImageFile(file)),
+      fileList.map((file) => uploadImageToS3(file)),
     );
 
     const uploadErrors: string[] = [];
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
       if (result.status === "fulfilled") {
-        editor
-          .chain()
-          .focus()
-          .setImage({ src: `${BASE_URL}${result.value.url}` })
-          .run();
+        editor.chain().focus().setImage({ src: result.value.url }).run();
       } else {
         uploadErrors.push(`${fileList[i].name}: ${result.reason.message}`);
       }
