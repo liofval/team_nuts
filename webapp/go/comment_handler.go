@@ -77,31 +77,24 @@ func ListCommentsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// ツリー構造に変換: 親コメントに返信をネスト
 	commentMap := make(map[int]*Comment)
-	var rootComments []Comment
-
 	for i := range allComments {
-		c := allComments[i]
-		c.Replies = []Comment{}
-		commentMap[c.ID] = &c
+		allComments[i].Replies = []Comment{}
+		commentMap[allComments[i].ID] = &allComments[i]
 	}
 
+	var rootComments []*Comment
 	for i := range allComments {
-		c := commentMap[allComments[i].ID]
+		c := &allComments[i]
 		if c.ParentID == nil {
-			rootComments = append(rootComments, *c)
-		} else {
-			if parent, ok := commentMap[*c.ParentID]; ok {
-				parent.Replies = append(parent.Replies, *c)
-			}
+			rootComments = append(rootComments, c)
+		} else if parent, ok := commentMap[*c.ParentID]; ok {
+			parent.Replies = append(parent.Replies, *c)
 		}
 	}
 
-	// 親のRepliesを更新（ポインタ経由の更新を反映）
 	result := make([]Comment, 0, len(rootComments))
 	for _, root := range rootComments {
-		if updated, ok := commentMap[root.ID]; ok {
-			result = append(result, *updated)
-		}
+		result = append(result, *root)
 	}
 
 	respondWithJSON(w, http.StatusOK, result)
