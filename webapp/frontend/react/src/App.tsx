@@ -4,6 +4,7 @@ import Heading from "@tiptap/extension-heading";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
+import Link from "@tiptap/extension-link";
 import { useState } from "react";
 import "./App.css";
 
@@ -64,18 +65,55 @@ type PressRelease = {
 
 function Page({ title: initialTitle, content }: PressRelease) {
   const [title, setTitle] = useState(() => initialTitle);
+
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text],
+    extensions: [
+      Document,
+      Heading,
+      Paragraph,
+      Text,
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      }),
+    ],
     content,
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
 
   const handleSave = () => {
+    if (!editor) return;
     mutate({
       title,
       content: JSON.stringify(editor.getJSON()),
     });
+  };
+
+  const setLink = () => {
+    if (!editor) return;
+
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("リンク先URLを入力してください", previousUrl);
+
+    if (url === null) return;
+
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: url })
+      .run();
   };
 
   return (
@@ -100,6 +138,13 @@ function Page({ title: initialTitle, content }: PressRelease) {
               className="titleInput"
             />
           </div>
+
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button type="button" onClick={setLink} disabled={!editor}>
+              リンク追加/編集
+            </button>
+          </div>
+
           <EditorContent editor={editor} />
         </div>
       </main>
