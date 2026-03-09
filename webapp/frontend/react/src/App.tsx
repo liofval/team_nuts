@@ -8,6 +8,7 @@ import Bold from "@tiptap/extension-bold";
 import Italic from "@tiptap/extension-italic";
 import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
 import { useState } from "react";
 import EditorToolbar from "./components/EditorToolbar";
 import "./App.css";
@@ -70,8 +71,27 @@ type PressRelease = {
 function Page({ title: initialTitle, content }: PressRelease) {
   const [title, setTitle] = useState(() => initialTitle);
   const [imageUrl, setImageUrl] = useState("");
+
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text, Bold, Italic, Underline, Image],
+    extensions: [
+      Document,
+      Heading,
+      Paragraph,
+      Text,
+      Bold,
+      Italic,
+      Underline,
+      Image,
+      Link.configure({
+        openOnClick: false,
+        autolink: true,
+        linkOnPaste: true,
+        HTMLAttributes: {
+          target: "_blank",
+          rel: "noopener noreferrer",
+        },
+      }),
+    ],
     content,
   });
 
@@ -83,6 +103,32 @@ function Page({ title: initialTitle, content }: PressRelease) {
       title,
       content: JSON.stringify(editor.getJSON()),
     });
+  };
+
+  const setLink = () => {
+    if (!editor) return;
+
+    const previousUrl = editor.getAttributes("link").href;
+    const url = window.prompt("リンク先URLを入力してください", previousUrl);
+
+    if (url === null) return;
+
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+
+    if (!/^https?:\/\//.test(url)) {
+      window.alert("URLはhttpまたはhttpsで始まる必要があります");
+      return;
+    }
+
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: url })
+      .run();
   };
 
   const handleInsertImage = () => {
@@ -115,6 +161,11 @@ function Page({ title: initialTitle, content }: PressRelease) {
             />
           </div>
           <EditorToolbar editor={editor ?? null} />
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <button type="button" onClick={setLink} disabled={!editor}>
+              リンク追加/編集
+            </button>
+          </div>
           <div className="imageInsertWrapper">
             <input
               type="url"
