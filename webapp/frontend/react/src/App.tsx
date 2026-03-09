@@ -6,6 +6,7 @@ import {
 } from "./hooks/usePressRelease";
 import { useAutoSave } from "./hooks/useAutoSave";
 import { editorExtensions } from "./extensions";
+import { ImageDropPaste } from "./hooks/useImageDropPaste";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
@@ -28,7 +29,7 @@ function Page({ title: initialTitle, content }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
 
   const editor = useEditor({
-    extensions: editorExtensions,
+    extensions: [...editorExtensions, ImageDropPaste],
     content,
   });
 
