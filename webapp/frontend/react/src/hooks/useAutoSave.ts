@@ -13,7 +13,6 @@ export function useAutoSave(
   title: string,
   onSave: (data: SaveData) => void,
 ) {
-  // setInterval のコールバックから title・onSave の最新値を参照するための ref
   const titleRef = useRef(title);
   useEffect(() => {
     titleRef.current = title;
@@ -24,15 +23,30 @@ export function useAutoSave(
     onSaveRef.current = onSave;
   }, [onSave]);
 
-  // 5秒ごとに自動保存
+  // サーバーに保存済みの値を保持する ref
+  const savedTitleRef = useRef(title);
+  const savedContentRef = useRef(
+    editor ? JSON.stringify(editor.getJSON()) : "",
+  );
+
+  // 5秒ごとに差分チェックして保存
   useEffect(() => {
     if (!editor) return;
 
     const intervalId = setInterval(() => {
-      onSaveRef.current({
-        title: titleRef.current,
-        content: JSON.stringify(editor.getJSON()),
-      });
+      const currentTitle = titleRef.current;
+      const currentContent = JSON.stringify(editor.getJSON());
+
+      const hasChanged =
+        currentTitle !== savedTitleRef.current ||
+        currentContent !== savedContentRef.current;
+
+      if (!hasChanged) return;
+
+      onSaveRef.current({ title: currentTitle, content: currentContent });
+
+      savedTitleRef.current = currentTitle;
+      savedContentRef.current = currentContent;
     }, AUTOSAVE_INTERVAL_MS);
 
     return () => clearInterval(intervalId);

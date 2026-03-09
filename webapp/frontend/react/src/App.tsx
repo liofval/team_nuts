@@ -34,7 +34,7 @@ function Page({ title: initialTitle, content }: PageProps) {
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
 
-  // 5秒ごとの自動保存（保存処理を外から渡す）
+  // 5秒ごとの自動保存
   useAutoSave(editor ?? null, title, save);
 
   const handleSave = () => {
@@ -71,7 +71,10 @@ function Page({ title: initialTitle, content }: PageProps) {
           </div>
           <EditorToolbar editor={editor ?? null} />
           <ListLinkToolbar editor={editor ?? null} />
-          <ImageToolbar editor={editor ?? null} />
+          <ImageToolbar
+            editor={editor ?? null}
+            onSave={handleSave}
+          />
           <EditorContent editor={editor} />
         </div>
       </main>

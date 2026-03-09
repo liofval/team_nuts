@@ -6,9 +6,10 @@ import "./ImageToolbar.css";
 
 type Props = {
   editor: Editor | null;
+  onSave: () => void;
 };
 
-export default function ImageToolbar({ editor }: Props) {
+export default function ImageToolbar({ editor, onSave }: Props) {
   const [imageUrl, setImageUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isPending: isUploading, mutate: uploadImage } =
@@ -21,6 +22,7 @@ export default function ImageToolbar({ editor }: Props) {
     if (!url) return;
     editor.chain().focus().setImage({ src: url }).run();
     setImageUrl("");
+    onSave();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +31,7 @@ export default function ImageToolbar({ editor }: Props) {
     uploadImage(file, {
       onSuccess: ({ url }) => {
         editor.chain().focus().setImage({ src: `${BASE_URL}${url}` }).run();
+        onSave();
       },
       onError: (error) => {
         alert(`エラー: ${error.message}`);
