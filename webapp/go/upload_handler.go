@@ -17,17 +17,16 @@ var allowedMimeTypes = map[string]string{
 	"image/jpeg": ".jpg",
 	"image/png":  ".png",
 	"image/gif":  ".gif",
-	"image/webp": ".webp",
 }
 
 // UploadImageHandler は画像をアップロードするハンドラー
 // POST /uploads
 func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
-	const maxUploadSize = 10 << 20 // 10MB
+	const maxUploadSize = 5 << 20 // 5MB
 
 	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize)
 	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
-		respondWithError(w, http.StatusBadRequest, "FILE_TOO_LARGE", "File size exceeds 10MB")
+		respondWithError(w, http.StatusBadRequest, "FILE_TOO_LARGE", "ファイルサイズが5MBを超えています")
 		return
 	}
 
@@ -47,7 +46,7 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
 	mimeType := http.DetectContentType(buf)
 	ext, ok := allowedMimeTypes[mimeType]
 	if !ok {
-		respondWithError(w, http.StatusBadRequest, "INVALID_FILE_TYPE", "Only JPEG, PNG, GIF, WebP are allowed")
+		respondWithError(w, http.StatusBadRequest, "INVALID_FILE_TYPE", "アップロード可能な形式はJPEG、PNG、GIFのみです")
 		return
 	}
 

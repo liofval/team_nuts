@@ -1,9 +1,14 @@
 import { useMutation } from "@tanstack/react-query";
 import { BASE_URL } from "../constants";
+import { validateImageFile } from "./imageValidation";
 
 export function useUploadImageMutation() {
   return useMutation({
     mutationFn: async (file: File) => {
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        throw new Error(validationError);
+      }
       const formData = new FormData();
       formData.append("image", file);
       const response = await fetch(`${BASE_URL}/uploads`, {

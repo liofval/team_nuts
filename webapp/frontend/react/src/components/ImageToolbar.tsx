@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/react";
 import { useRef, useState } from "react";
 import { useUploadImageMutation } from "../hooks/useUploadImage";
+import { ACCEPT_IMAGE_TYPES } from "../hooks/imageValidation";
 import { BASE_URL } from "../constants";
 import "./ImageToolbar.css";
 
@@ -59,7 +60,7 @@ export default function ImageToolbar({ editor, onSave }: Props) {
       </button>
       <input
         type="file"
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={ACCEPT_IMAGE_TYPES}
         ref={fileInputRef}
         onChange={handleFileChange}
         className="imageFileInput"
