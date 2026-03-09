@@ -20,16 +20,25 @@ func main() {
 	r := chi.NewRouter()
 
 	// ミドルウェアの設定
-	r.Use(middleware.Logger)       // ログ出力
-	r.Use(middleware.Recoverer)    // パニックからの復旧
-	r.Use(middleware.RequestID)    // リクエストIDの付与
-	r.Use(middleware.RealIP)       // クライアントの実IPアドレスを取得
+	r.Use(middleware.Logger)    // ログ出力
+	r.Use(middleware.Recoverer) // パニックからの復旧
+	r.Use(middleware.RequestID) // リクエストIDの付与
+	r.Use(middleware.RealIP)    // クライアントの実IPアドレスを取得
 
 	// CORSミドルウェアの設定（開発用）
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Header.Get("Access-Control-Request-Private-Network") == "true" {
+				w.Header().Set("Access-Control-Allow-Private-Network", "true")
+			}
+			next.ServeHTTP(w, r)
+		})
+	})
+
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   []string{"http://13.211.211.117:3000", "http://13.211.211.117", "http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization", "Access-Control-Request-Private-Network"},
 		AllowCredentials: false,
 		MaxAge:           300,
 	}))
