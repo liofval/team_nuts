@@ -4,6 +4,7 @@ import {
   usePressReleaseQuery,
   useSavePressReleaseMutation,
 } from "./hooks/usePressRelease";
+import { useAutoSave } from "./hooks/useAutoSave";
 import { editorExtensions } from "./extensions";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
@@ -32,6 +33,9 @@ function Page({ title: initialTitle, content }: PageProps) {
   });
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
+
+  // 5秒ごとの自動保存
+  useAutoSave(editor ?? null, title, save);
 
   const handleSave = () => {
     if (!editor) return;
@@ -67,7 +71,10 @@ function Page({ title: initialTitle, content }: PageProps) {
           </div>
           <EditorToolbar editor={editor ?? null} />
           <ListLinkToolbar editor={editor ?? null} />
-          <ImageToolbar editor={editor ?? null} />
+          <ImageToolbar
+            editor={editor ?? null}
+            onSave={handleSave}
+          />
           <EditorContent editor={editor} />
         </div>
       </main>
