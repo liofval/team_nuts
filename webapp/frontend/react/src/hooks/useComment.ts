@@ -1,0 +1,114 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { BASE_URL } from "../constants";
+
+export type Comment = {
+  id: number;
+  press_release_id: number;
+  parent_id: number | null;
+  comment_id: string;
+  body: string;
+  resolved: boolean;
+  created_at: string;
+  updated_at: string;
+  replies: Comment[];
+};
+
+const COMMENTS_QUERY_KEY = ["comments"];
+
+export function useCommentsQuery() {
+  return useQuery<Comment[]>({
+    queryKey: COMMENTS_QUERY_KEY,
+    queryFn: async () => {
+      const response = await fetch(`${BASE_URL}/press-releases/1/comments`);
+      if (!response.ok) {
+        throw new Error(`HTTPエラー: ${response.status}`);
+      }
+      return response.json();
+    },
+  });
+}
+
+export function useCreateCommentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      comment_id: string;
+      body: string;
+      parent_id?: number;
+    }) => {
+      const response = await fetch(`${BASE_URL}/press-releases/1/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error("コメントの保存に失敗しました");
+      }
+      return response.json() as Promise<Comment>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+    },
+  });
+}
+
+export function useResolveCommentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (commentId: number) => {
+      const response = await fetch(
+        `${BASE_URL}/press-releases/1/comments/${commentId}/resolve`,
+        { method: "PUT" },
+      );
+      if (!response.ok) {
+        throw new Error("コメントの解決に失敗しました");
+      }
+      return response.json() as Promise<Comment>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+    },
+  });
+}
+
+export function useUnresolveCommentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (commentId: number) => {
+      const response = await fetch(
+        `${BASE_URL}/press-releases/1/comments/${commentId}/unresolve`,
+        { method: "PUT" },
+      );
+      if (!response.ok) {
+        throw new Error("コメントの解決取消に失敗しました");
+      }
+      return response.json() as Promise<Comment>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+    },
+  });
+}
+
+export function useDeleteCommentMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (commentId: number) => {
+      const response = await fetch(
+        `${BASE_URL}/press-releases/1/comments/${commentId}`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) {
+        throw new Error("コメントの削除に失敗しました");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+    },
+  });
+}

@@ -11,6 +11,7 @@ import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
 import CharacterCount from "./components/CharacterCount";
+import CommentSidebar from "./components/CommentSidebar";
 import "./App.css";
 
 export function App() {
@@ -76,27 +77,30 @@ function Page({ title: initialTitle, content }: PageProps) {
       </header>
 
       <main className="main">
-        <div className="editorWrapper">
-          <div className="titleInputWrapper">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="タイトルを入力してください"
-              className="titleInput"
+        <div className="mainContent">
+          <div className="editorWrapper">
+            <div className="titleInputWrapper">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="タイトルを入力してください"
+                className="titleInput"
+              />
+            </div>
+
+            {/* 3-1 文字数表示 */}
+            <CharacterCount titleCount={title.length} bodyCount={bodyCount} />
+
+            <EditorToolbar editor={editor ?? null} />
+            <ListLinkToolbar editor={editor ?? null} />
+            <ImageToolbar
+              editor={editor ?? null}
+              onSave={handleSave}
             />
+            <EditorContent editor={editor} />
           </div>
-
-          {/* 3-1 文字数表示 */}
-          <CharacterCount titleCount={title.length} bodyCount={bodyCount} />
-
-          <EditorToolbar editor={editor ?? null} />
-          <ListLinkToolbar editor={editor ?? null} />
-          <ImageToolbar
-            editor={editor ?? null}
-            onSave={handleSave}
-          />
-          <EditorContent editor={editor} />
+          <CommentSidebar editor={editor ?? null} onSave={handleSave} />
         </div>
       </main>
     </div>
