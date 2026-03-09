@@ -10,6 +10,7 @@ import { ImageDropPaste } from "./hooks/useImageDropPaste";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
+import TemplatePanel from "./components/TemplatePanel";
 import CharacterCount from "./components/CharacterCount";
 import "./App.css";
 
@@ -62,6 +63,12 @@ function Page({ title: initialTitle, content }: PageProps) {
     });
   };
 
+  const handleApplyTemplate = (templateTitle: string, templateContent: string) => {
+    if (!editor) return;
+    setTitle(templateTitle);
+    editor.commands.setContent(JSON.parse(templateContent));
+  };
+
   return (
     <div className="container">
       <header className="header">
@@ -95,6 +102,11 @@ function Page({ title: initialTitle, content }: PageProps) {
           <ImageToolbar
             editor={editor ?? null}
             onSave={handleSave}
+          />
+          <TemplatePanel
+            editor={editor ?? null}
+            title={title}
+            onApplyTemplate={handleApplyTemplate}
           />
           <EditorContent editor={editor} />
         </div>
