@@ -7,18 +7,18 @@
 ## 画面レイアウト
 
 ```
-┌─────────────────────────────────────┐
-│ プレスリリースエディター      [保存] │
-├─────────────────────────────────────┤
-│ タイトル入力欄                      │
-├─────────────────────────────────────┤
-│ 画像URL入力欄            [画像を挿入]│
-├─────────────────────────────────────┤
-│                                     │
-│   TipTap リッチテキストエディタ     │
-│   （見出し・段落・テキスト・画像）  │
-│                                     │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│ プレスリリースエディター                   [保存] │
+├──────────────────────────────────────────────────┤
+│ タイトル入力欄                                   │
+├──────────────────────────────────────────────────┤
+│ 画像URL入力欄     [画像を挿入] [画像をアップロード]│
+├──────────────────────────────────────────────────┤
+│                                                  │
+│   TipTap リッチテキストエディタ                  │
+│   （見出し・段落・テキスト・画像）               │
+│                                                  │
+└──────────────────────────────────────────────────┘
 ```
 
 ---
@@ -47,7 +47,7 @@ mutate({ title, content });
 - 保存成功後、クエリキャッシュを自動更新
 - エラー時はアラートで通知
 
-### 画像挿入：`handleInsertImage`
+### 画像挿入：`handleInsertImage`（URL指定）
 
 ```typescript
 const [imageUrl, setImageUrl] = useState("");
@@ -63,6 +63,39 @@ const handleInsertImage = () => {
 - URL 入力欄に URL を入力し「画像を挿入」ボタン（または Enter）で実行
 - `editor.chain().focus().setImage(...)` でカーソル位置に画像を挿入
 - 挿入後に入力欄を自動クリア
+
+### 画像アップロード：`useUploadImageMutation` / `handleFileChange`（ローカルファイル）
+
+```typescript
+function useUploadImageMutation() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append("image", file);
+      const response = await fetch(`${BASE_URL}/uploads`, {
+        method: "POST",
+        body: formData,
+      });
+      return response.json() as Promise<{ url: string }>;
+    },
+  });
+}
+
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  uploadImage(file, {
+    onSuccess: ({ url }) => {
+      editor.chain().focus().setImage({ src: `${BASE_URL}${url}` }).run();
+    },
+  });
+};
+```
+
+- 「画像をアップロード」ボタンをクリック → 非表示の `<input type="file">` を起動
+- 選択したファイルを `POST /uploads` でサーバーに送信
+- サーバーが返した URL をエディタに挿入
+- アップロードした画像はサーバーに保存されるため、リロード後も表示される
 
 ### TipTap エディタ設定
 
