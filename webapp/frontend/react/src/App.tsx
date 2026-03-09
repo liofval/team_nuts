@@ -1,10 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEditor, EditorContent } from "@tiptap/react";
-import Heading from "@tiptap/extension-heading";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
+import Heading from "@tiptap/extension-heading";
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
+import Underline from "@tiptap/extension-underline";
 import { useState } from "react";
+import EditorToolbar from "./components/EditorToolbar";
 import "./App.css";
 
 const queryKey = ["fetch-press-release"];
@@ -59,13 +63,13 @@ export function App() {
 
 type PressRelease = {
   title: string;
-  content: string;
+  content: object;
 };
 
 function Page({ title: initialTitle, content }: PressRelease) {
   const [title, setTitle] = useState(() => initialTitle);
   const editor = useEditor({
-    extensions: [Document, Heading, Paragraph, Text],
+    extensions: [Document, Paragraph, Text, Heading, Bold, Italic, Underline],
     content,
   });
 
@@ -83,6 +87,7 @@ function Page({ title: initialTitle, content }: PressRelease) {
       {/* ヘッダー */}
       <header className="header">
         <h1 className="title">プレスリリースエディター</h1>
+        <EditorToolbar editor={editor ?? null} />
         <button onClick={handleSave} className="saveButton" disabled={isPending}>
           {isPending ? "保存中..." : "保存"}
         </button>
