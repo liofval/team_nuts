@@ -1,4 +1,5 @@
-import type { EditorProps } from "@tiptap/pm/view";
+import { Extension } from "@tiptap/react";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { BASE_URL } from "../constants";
 
 async function uploadImage(file: File): Promise<string> {
@@ -20,64 +21,90 @@ function isImageFile(file: File): boolean {
   return file.type.startsWith("image/");
 }
 
-export const imageDropPasteProps: EditorProps = {
-  handleDrop(view, event, _slice, moved) {
-    if (moved) return false;
+export const ImageDropPaste = Extension.create({
+  name: "imageDropPaste",
 
-    const files = event.dataTransfer?.files;
-    if (!files || files.length === 0) return false;
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("imageDropPaste"),
+        props: {
+          handleDOMEvents: {
+            dragover(_view, event) {
+              const types = event.dataTransfer?.types;
+              if (types?.includes("Files")) {
+                event.preventDefault();
+                event.dataTransfer!.dropEffect = "copy";
+              }
+              return false;
+            },
+          },
 
-    const imageFiles = Array.from(files).filter(isImageFile);
-    if (imageFiles.length === 0) return false;
+          handleDrop(view, event, _slice, moved) {
+            if (moved) return false;
 
-    event.preventDefault();
+            const files = event.dataTransfer?.files;
+            if (!files || files.length === 0) return false;
 
-    const pos = view.posAtCoords({
-      left: event.clientX,
-      top: event.clientY,
-    });
+            const imageFiles = Array.from(files).filter(isImageFile);
+            if (imageFiles.length === 0) return false;
 
-    for (const file of imageFiles) {
-      uploadImage(file)
-        .then((src) => {
-          const node = view.state.schema.nodes.image.create({ src });
-          const insertPos = pos?.pos ?? view.state.doc.content.size;
-          const tr = view.state.tr.insert(insertPos, node);
-          view.dispatch(tr);
-        })
-        .catch((err) => {
-          alert(`画像アップロードエラー: ${err.message}`);
-        });
-    }
+            event.preventDefault();
+            event.stopPropagation();
 
-    return true;
+            const pos = view.posAtCoords({
+              left: event.clientX,
+              top: event.clientY,
+            });
+
+            for (const file of imageFiles) {
+              uploadImage(file)
+                .then((src) => {
+                  const node = view.state.schema.nodes.image.create({ src });
+                  const insertPos = pos?.pos ?? view.state.doc.content.size;
+                  const tr = view.state.tr.insert(insertPos, node);
+                  view.dispatch(tr);
+                })
+                .catch((err) => {
+                  alert(`画像アップロードエラー: ${err.message}`);
+                });
+            }
+
+            return true;
+          },
+
+          handlePaste(view, event) {
+            const items = event.clipboardData?.items;
+            if (!items) return false;
+
+            const imageFiles = Array.from(items)
+              .filter((item) => item.type.startsWith("image/"))
+              .map((item) => item.getAsFile())
+              .filter((file): file is File => file !== null);
+
+            if (imageFiles.length === 0) return false;
+
+            event.preventDefault();
+
+            for (const file of imageFiles) {
+              uploadImage(file)
+                .then((src) => {
+                  const node = view.state.schema.nodes.image.create({ src });
+                  const tr = view.state.tr.insert(
+                    view.state.selection.anchor,
+                    node,
+                  );
+                  view.dispatch(tr);
+                })
+                .catch((err) => {
+                  alert(`画像アップロードエラー: ${err.message}`);
+                });
+            }
+
+            return true;
+          },
+        },
+      }),
+    ];
   },
-
-  handlePaste(view, event) {
-    const items = event.clipboardData?.items;
-    if (!items) return false;
-
-    const imageFiles = Array.from(items)
-      .filter((item) => item.type.startsWith("image/"))
-      .map((item) => item.getAsFile())
-      .filter((file): file is File => file !== null);
-
-    if (imageFiles.length === 0) return false;
-
-    event.preventDefault();
-
-    for (const file of imageFiles) {
-      uploadImage(file)
-        .then((src) => {
-          const node = view.state.schema.nodes.image.create({ src });
-          const tr = view.state.tr.insert(view.state.selection.anchor, node);
-          view.dispatch(tr);
-        })
-        .catch((err) => {
-          alert(`画像アップロードエラー: ${err.message}`);
-        });
-    }
-
-    return true;
-  },
-};
+});
