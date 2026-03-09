@@ -1,5 +1,5 @@
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   usePressReleaseQuery,
   useSavePressReleaseMutation,
@@ -10,6 +10,7 @@ import { ImageDropPaste } from "./hooks/useImageDropPaste";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
+import CharacterCount from "./components/CharacterCount";
 import "./App.css";
 
 export function App() {
@@ -32,6 +33,21 @@ function Page({ title: initialTitle, content }: PageProps) {
     extensions: [...editorExtensions, ImageDropPaste],
     content,
   });
+
+  // 3-1: 本文の文字数（editor.getText）は入力だけでは再レンダリングされないのでstateで持つ
+  const [bodyCount, setBodyCount] = useState(0);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const update = () => setBodyCount(editor.getText().length);
+    update(); // 初期表示
+    editor.on("update", update);
+
+    return () => {
+      editor.off("update", update);
+    };
+  }, [editor]);
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
 
@@ -70,6 +86,10 @@ function Page({ title: initialTitle, content }: PageProps) {
               className="titleInput"
             />
           </div>
+
+          {/* 3-1 文字数表示 */}
+          <CharacterCount titleCount={title.length} bodyCount={bodyCount} />
+
           <EditorToolbar editor={editor ?? null} />
           <ListLinkToolbar editor={editor ?? null} />
           <ImageToolbar
