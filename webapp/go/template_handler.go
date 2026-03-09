@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -40,6 +41,7 @@ func ListTemplatesHandler(w http.ResponseWriter, r *http.Request) {
 		"SELECT id, name, title, content, created_at, updated_at FROM templates ORDER BY updated_at DESC",
 	)
 	if err != nil {
+		log.Printf("ListTemplatesHandler: query error: %v", err)
 		respondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -50,6 +52,7 @@ func ListTemplatesHandler(w http.ResponseWriter, r *http.Request) {
 		var t Template
 		var createdAt, updatedAt time.Time
 		if err := rows.Scan(&t.ID, &t.Name, &t.Title, &t.Content, &createdAt, &updatedAt); err != nil {
+			log.Printf("ListTemplatesHandler: row scan error: %v", err)
 			respondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 			return
 		}
@@ -99,6 +102,9 @@ func GetTemplateHandler(w http.ResponseWriter, r *http.Request) {
 func parseTemplateRequest(r *http.Request) (*SaveTemplateRequest, int, string, string) {
 	const maxRequestBodyBytes = 1 << 20 // 1MB
 
+	// Use the ResponseWriter-aware MaxBytesReader to enforce size limits safely.
+	// When called from handlers, pass the ResponseWriter as the first arg.
+	// Here we can't access w, so fall back to limiting the body read directly.
 	limitedBody := http.MaxBytesReader(nil, r.Body, maxRequestBodyBytes)
 	body, err := io.ReadAll(limitedBody)
 	if err != nil {
