@@ -40,6 +40,13 @@ func main() {
 	r.Post("/uploads", UploadImageHandler)
 	r.Get("/ogp", ogpHandler)
 
+	// テンプレートAPI
+	r.Get("/templates", ListTemplatesHandler)
+	r.Post("/templates", CreateTemplateHandler)
+	r.Get("/templates/{id}", GetTemplateHandler)
+	r.Put("/templates/{id}", UpdateTemplateHandler)
+	r.Delete("/templates/{id}", DeleteTemplateHandler)
+
 	// アップロード済み画像の静的ファイル配信
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(uploadsDir))))
 

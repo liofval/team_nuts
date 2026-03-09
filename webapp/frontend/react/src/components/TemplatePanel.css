@@ -1,0 +1,152 @@
+.templatePanel {
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.templateToggleButton {
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.templateToggleButton:hover {
+  background-color: #5a6268;
+}
+
+.templateContent {
+  margin-top: 0.75rem;
+}
+
+.templateSectionTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: #333;
+}
+
+.templateSaveSection {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.templateSaveForm {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.templateNameInput {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  outline: none;
+}
+
+.templateNameInput:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.templateSaveButton {
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.templateSaveButton:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.templateSaveButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.templateListSection {
+  margin-bottom: 0.5rem;
+}
+
+.templateLoading,
+.templateEmpty {
+  font-size: 0.875rem;
+  color: #6c757d;
+  margin: 0.5rem 0;
+}
+
+.templateList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.templateItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.templateItem:last-child {
+  border-bottom: none;
+}
+
+.templateItemInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.templateItemName {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.templateItemDate {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.templateItemActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.templateApplyButton {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.templateApplyButton:hover {
+  background-color: #0056b3;
+}
+
+.templateDeleteButton {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.templateDeleteButton:hover {
+  background-color: #c82333;
+}
