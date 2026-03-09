@@ -9,6 +9,9 @@ import Italic from "@tiptap/extension-italic";
 import Underline from "@tiptap/extension-underline";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
+import BulletList from "@tiptap/extension-bullet-list";
+import OrderedList from "@tiptap/extension-ordered-list";
+import ListItem from "@tiptap/extension-list-item";
 import { useRef, useState } from "react";
 import EditorToolbar from "./components/EditorToolbar";
 import "./App.css";
@@ -110,6 +113,9 @@ function Page({ title: initialTitle, content }: PressRelease) {
           rel: "noopener noreferrer",
         },
       }),
+      BulletList,
+      OrderedList,
+      ListItem,
     ],
     content,
   });
@@ -201,11 +207,34 @@ function Page({ title: initialTitle, content }: PressRelease) {
             />
           </div>
           <EditorToolbar editor={editor ?? null} />
-          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+
+          {/* リスト・リンクツールバー */}
+          <div className="toolbar">
+            <button
+              type="button"
+              onClick={() => editor?.chain().focus().toggleBulletList().run()}
+              className={`toolbarButton${editor?.isActive("bulletList") ? " toolbarButton--active" : ""}`}
+              title="箇条書き (Ctrl+Shift+8)"
+            >
+              <BulletListIcon />
+              箇条書き
+            </button>
+
+            <button
+              type="button"
+              onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+              className={`toolbarButton${editor?.isActive("orderedList") ? " toolbarButton--active" : ""}`}
+              title="番号付きリスト (Ctrl+Shift+7)"
+            >
+              <OrderedListIcon />
+              番号付き
+            </button>
+
             <button type="button" onClick={setLink} disabled={!editor}>
               リンク追加/編集
             </button>
           </div>
+
           <div className="imageInsertWrapper">
             <input
               type="url"
@@ -241,5 +270,31 @@ function Page({ title: initialTitle, content }: PressRelease) {
         </div>
       </main>
     </div>
+  );
+}
+
+function BulletListIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <circle cx="2" cy="3.5"  r="1.5" fill="currentColor" />
+      <circle cx="2" cy="7.5"  r="1.5" fill="currentColor" />
+      <circle cx="2" cy="11.5" r="1.5" fill="currentColor" />
+      <rect x="5.5" y="2.5"  width="9" height="2" rx="1" fill="currentColor" />
+      <rect x="5.5" y="6.5"  width="9" height="2" rx="1" fill="currentColor" />
+      <rect x="5.5" y="10.5" width="9" height="2" rx="1" fill="currentColor" />
+    </svg>
+  );
+}
+
+function OrderedListIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <text x="0" y="5"  fontSize="5" fontWeight="700" fill="currentColor" fontFamily="monospace">1.</text>
+      <text x="0" y="9"  fontSize="5" fontWeight="700" fill="currentColor" fontFamily="monospace">2.</text>
+      <text x="0" y="13" fontSize="5" fontWeight="700" fill="currentColor" fontFamily="monospace">3.</text>
+      <rect x="5.5" y="2.5"  width="9" height="2" rx="1" fill="currentColor" />
+      <rect x="5.5" y="6.5"  width="9" height="2" rx="1" fill="currentColor" />
+      <rect x="5.5" y="10.5" width="9" height="2" rx="1" fill="currentColor" />
+    </svg>
   );
 }

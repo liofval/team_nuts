@@ -36,3 +36,5 @@ CLAUDE.md
 # Temporary files
 *.tmp
 *.temp
+
+node_modules/
