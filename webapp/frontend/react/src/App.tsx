@@ -111,6 +111,11 @@ function Page({ title: initialTitle, content }: PressRelease) {
       return;
     }
 
+    if (!/^https?:\/\//.test(url)) {
+      window.alert("URLはhttpまたはhttpsで始まる必要があります");
+      return;
+    }
+
     editor
       .chain()
       .focus()
