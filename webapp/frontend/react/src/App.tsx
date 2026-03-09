@@ -7,6 +7,7 @@ import Heading from "@tiptap/extension-heading";
 import Bold from "@tiptap/extension-bold";
 import Italic from "@tiptap/extension-italic";
 import Underline from "@tiptap/extension-underline";
+import Image from "@tiptap/extension-image";
 import { useState } from "react";
 import EditorToolbar from "./components/EditorToolbar";
 import "./App.css";
@@ -63,23 +64,32 @@ export function App() {
 
 type PressRelease = {
   title: string;
-  content: object;
+  content: string;
 };
 
 function Page({ title: initialTitle, content }: PressRelease) {
   const [title, setTitle] = useState(() => initialTitle);
+  const [imageUrl, setImageUrl] = useState("");
   const editor = useEditor({
-    extensions: [Document, Paragraph, Text, Heading, Bold, Italic, Underline],
+    extensions: [Document, Heading, Paragraph, Text, Bold, Italic, Underline, Image],
     content,
   });
 
   const { isPending, mutate } = useSavePressReleaseMutation();
 
   const handleSave = () => {
+    if (!editor) return;
     mutate({
       title,
       content: JSON.stringify(editor.getJSON()),
     });
+  };
+
+  const handleInsertImage = () => {
+    const url = imageUrl.trim();
+    if (!url) return;
+    editor.chain().focus().setImage({ src: url }).run();
+    setImageUrl("");
   };
 
   return (
@@ -87,7 +97,6 @@ function Page({ title: initialTitle, content }: PressRelease) {
       {/* ヘッダー */}
       <header className="header">
         <h1 className="title">プレスリリースエディター</h1>
-        <EditorToolbar editor={editor ?? null} />
         <button onClick={handleSave} className="saveButton" disabled={isPending}>
           {isPending ? "保存中..." : "保存"}
         </button>
@@ -104,6 +113,24 @@ function Page({ title: initialTitle, content }: PressRelease) {
               placeholder="タイトルを入力してください"
               className="titleInput"
             />
+          </div>
+          <EditorToolbar editor={editor ?? null} />
+          <div className="imageInsertWrapper">
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleInsertImage()}
+              placeholder="画像URLを入力してください"
+              className="imageUrlInput"
+            />
+            <button
+              onClick={handleInsertImage}
+              disabled={!imageUrl.trim()}
+              className="imageInsertButton"
+            >
+              画像を挿入
+            </button>
           </div>
           <EditorContent editor={editor} />
         </div>
