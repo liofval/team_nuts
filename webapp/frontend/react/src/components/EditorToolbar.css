@@ -37,3 +37,19 @@
 .toolbarButton.underline span {
   text-decoration: underline;
 }
+
+/* Ensure variant + active selectors get the same visual treatment */
+.toolbarButton.bold.active,
+.toolbarButton.italic.active,
+.toolbarButton.underline.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+/* Ensure inner elements inherit button color when active */
+.toolbarButton > strong,
+.toolbarButton > em,
+.toolbarButton > span {
+  color: inherit;
+}

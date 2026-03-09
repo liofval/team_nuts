@@ -13,7 +13,7 @@ export default function EditorToolbar({ editor }: Props) {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`toolbarButton${editor.isActive("bold") ? " active" : ""}`}
+        className={`toolbarButton bold${editor.isActive("bold") ? " active" : ""}`}
         title="太字 (Ctrl+B)"
       >
         <strong>B</strong>
