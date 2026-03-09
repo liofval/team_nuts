@@ -167,7 +167,7 @@ function CommentThread({
     if (!confirm("このコメントを削除しますか？")) return;
 
     // エディタからマークを削除（返信がない場合のみ）
-    if (comment.replies.length === 0) {
+    if ((comment.replies ?? []).length === 0) {
       const { doc, tr } = editor.state;
       doc.descendants((node, pos) => {
         const mark = node.marks.find(
@@ -222,9 +222,9 @@ function CommentThread({
         </div>
       </div>
 
-      {comment.replies.length > 0 && (
+      {(comment.replies ?? []).length > 0 && (
         <div className="commentReplies">
-          {comment.replies.map((reply) => (
+          {(comment.replies ?? []).map((reply) => (
             <div key={reply.id} className="commentReply">
               <div className="commentBody">{reply.body}</div>
               <div className="commentMeta">
