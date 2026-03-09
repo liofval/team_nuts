@@ -5,6 +5,7 @@ import {
   useSavePressReleaseMutation,
 } from "./hooks/usePressRelease";
 import { editorExtensions } from "./extensions";
+import { imageDropPasteProps } from "./hooks/useImageDropPaste";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
@@ -29,6 +30,7 @@ function Page({ title: initialTitle, content }: PageProps) {
   const editor = useEditor({
     extensions: editorExtensions,
     content,
+    editorProps: imageDropPasteProps,
   });
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
