@@ -4,6 +4,7 @@ import Heading from "@tiptap/extension-heading";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";
+import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import { useState } from "react";
 import "./App.css";
@@ -65,6 +66,7 @@ type PressRelease = {
 
 function Page({ title: initialTitle, content }: PressRelease) {
   const [title, setTitle] = useState(() => initialTitle);
+  const [imageUrl, setImageUrl] = useState("");
 
   const editor = useEditor({
     extensions: [
@@ -72,6 +74,7 @@ function Page({ title: initialTitle, content }: PressRelease) {
       Heading,
       Paragraph,
       Text,
+      Image,
       Link.configure({
         openOnClick: false,
         autolink: true,
@@ -116,6 +119,13 @@ function Page({ title: initialTitle, content }: PressRelease) {
       .run();
   };
 
+  const handleInsertImage = () => {
+    const url = imageUrl.trim();
+    if (!url) return;
+    editor.chain().focus().setImage({ src: url }).run();
+    setImageUrl("");
+  };
+
   return (
     <div className="container">
       {/* ヘッダー */}
@@ -138,13 +148,28 @@ function Page({ title: initialTitle, content }: PressRelease) {
               className="titleInput"
             />
           </div>
-
           <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
             <button type="button" onClick={setLink} disabled={!editor}>
               リンク追加/編集
             </button>
           </div>
-
+          <div className="imageInsertWrapper">
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleInsertImage()}
+              placeholder="画像URLを入力してください"
+              className="imageUrlInput"
+            />
+            <button
+              onClick={handleInsertImage}
+              disabled={!imageUrl.trim()}
+              className="imageInsertButton"
+            >
+              画像を挿入
+            </button>
+          </div>
           <EditorContent editor={editor} />
         </div>
       </main>
