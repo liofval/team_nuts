@@ -38,6 +38,7 @@ func main() {
 	r.Get("/press-releases/{id}", GetPressReleaseHandler)
 	r.Post("/press-releases/{id}", SavePressReleaseHandler)
 	r.Post("/uploads", UploadImageHandler)
+	r.Get("/ogp", ogpHandler)
 
 	// テンプレートAPI
 	r.Get("/templates", ListTemplatesHandler)

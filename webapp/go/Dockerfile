@@ -1,7 +1,7 @@
 FROM golang:1.25-alpine
 
-# Install git for go modules
-RUN apk add --no-cache git
+# Install git and CA certificates
+RUN apk add --no-cache git ca-certificates
 
 WORKDIR /app
 

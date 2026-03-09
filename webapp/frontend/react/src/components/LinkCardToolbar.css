@@ -1,0 +1,190 @@
+.linkCardToolbar {
+  padding: 10px 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* URL入力行 */
+.linkCardToolbar__inputRow {
+  display: flex;
+  gap: 8px;
+}
+
+.linkCardToolbar__input {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.875rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  outline: none;
+}
+
+.linkCardToolbar__input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.linkCardToolbar__fetchButton {
+  padding: 6px 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.1s;
+}
+
+.linkCardToolbar__fetchButton:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.linkCardToolbar__fetchButton:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+/* エラー */
+.linkCardToolbar__error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #dc3545;
+}
+
+/* プレビュー */
+.linkCardToolbar__preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+}
+
+.linkCardToolbar__previewImage {
+  width: 80px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.linkCardToolbar__previewBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.linkCardToolbar__previewTitle {
+  margin: 0 0 2px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.linkCardToolbar__previewDescription {
+  margin: 0 0 2px;
+  font-size: 0.75rem;
+  color: #6c757d;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.linkCardToolbar__previewUrl {
+  margin: 0;
+  font-size: 0.7rem;
+  color: #adb5bd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.linkCardToolbar__insertButton {
+  padding: 6px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.1s;
+}
+
+.linkCardToolbar__insertButton:hover {
+  background: #1e7e34;
+}
+
+/* ── エディター内のリンクカード表示 ── */
+.linkCard {
+  display: flex;
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  background: white;
+  transition: box-shadow 0.15s;
+  margin: 1em 0;
+}
+
+.linkCard:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.linkCard__image {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.linkCard__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.linkCard__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.linkCard__description {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6c757d;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.linkCard__url {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #adb5bd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
