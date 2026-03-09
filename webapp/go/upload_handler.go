@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -80,6 +81,13 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// リサイズ処理（長辺600px超の場合）
+	resized, err := resizeImage(file, mimeType)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to process image")
+		return
+	}
+
 	// ファイルを保存
 	dst, err := os.Create(filepath.Join(uploadsDir, filename))
 	if err != nil {
@@ -88,9 +96,21 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer dst.Close()
 
-	if _, err := io.Copy(dst, file); err != nil {
-		respondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to save file")
-		return
+	if resized != nil {
+		if _, err := io.Copy(dst, bytes.NewReader(resized)); err != nil {
+			respondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to save file")
+			return
+		}
+	} else {
+		// リサイズ不要の場合はファイル先頭に戻して元データを保存
+		if _, err := file.Seek(0, io.SeekStart); err != nil {
+			respondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+			return
+		}
+		if _, err := io.Copy(dst, file); err != nil {
+			respondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to save file")
+			return
+		}
 	}
 
 	respondWithJSON(w, http.StatusOK, map[string]string{
