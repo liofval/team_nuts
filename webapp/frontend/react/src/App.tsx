@@ -10,6 +10,7 @@ import { ImageDropPaste } from "./hooks/useImageDropPaste";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
+import LinkCardToolbar from "./components/LinkCardToolbar";
 import CharacterCount from "./components/CharacterCount";
 import "./App.css";
 
@@ -34,14 +35,13 @@ function Page({ title: initialTitle, content }: PageProps) {
     content,
   });
 
-  // 3-1: 本文の文字数（editor.getText）は入力だけでは再レンダリングされないのでstateで持つ
   const [bodyCount, setBodyCount] = useState(0);
 
   useEffect(() => {
     if (!editor) return;
 
     const update = () => setBodyCount(editor.getText().length);
-    update(); // 初期表示
+    update();
     editor.on("update", update);
 
     return () => {
@@ -51,7 +51,6 @@ function Page({ title: initialTitle, content }: PageProps) {
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
 
-  // 5秒ごとの自動保存
   useAutoSave(editor ?? null, title, save);
 
   const handleSave = () => {
@@ -87,15 +86,12 @@ function Page({ title: initialTitle, content }: PageProps) {
             />
           </div>
 
-          {/* 3-1 文字数表示 */}
           <CharacterCount titleCount={title.length} bodyCount={bodyCount} />
 
           <EditorToolbar editor={editor ?? null} />
           <ListLinkToolbar editor={editor ?? null} />
-          <ImageToolbar
-            editor={editor ?? null}
-            onSave={handleSave}
-          />
+          <ImageToolbar editor={editor ?? null} onSave={handleSave} />
+          <LinkCardToolbar editor={editor ?? null} />
           <EditorContent editor={editor} />
         </div>
       </main>
