@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -26,6 +28,88 @@ type PressRelease struct {
 type SavePressReleaseRequest struct {
 	Title   string `json:"title"`
 	Content string `json:"content"`
+}
+
+const (
+	titleMaxChars = 100
+	bodyMaxChars  = 500
+)
+
+// tiptapGetTextLengthFromJSON は、フロントの editor.getText().length に寄せた文字数カウントを行います。
+// 方針：TipTap JSONを走査して text を連結し、ブロックノード境界で改行(\n)相当を挿入してカウントします。
+func tiptapGetTextLengthFromJSON(contentJSON string) (int, error) {
+	var v any
+	if err := json.Unmarshal([]byte(contentJSON), &v); err != nil {
+		return 0, err
+	}
+
+	var b strings.Builder
+
+	var walk func(node any, parentType string)
+	var nodeType func(node map[string]any) string
+
+	nodeType = func(m map[string]any) string {
+		if t, ok := m["type"].(string); ok {
+			return t
+		}
+		return ""
+	}
+
+	// ブロック境界で改行を入れたいノード
+	isBlockBoundary := func(t string) bool {
+		switch t {
+		case "paragraph", "heading", "blockquote", "codeBlock":
+			return true
+		case "listItem":
+			return true
+		default:
+			return false
+		}
+	}
+
+	walk = func(node any, parent string) {
+		switch x := node.(type) {
+		case map[string]any:
+			t := nodeType(x)
+
+			// text node
+			if t == "text" {
+				if txt, ok := x["text"].(string); ok {
+					b.WriteString(txt)
+				}
+				return
+			}
+
+			// 子を走査
+			if c, ok := x["content"]; ok {
+				walk(c, t)
+			} else {
+				for _, val := range x {
+					walk(val, t)
+				}
+			}
+
+			// ブロックノードの終端で改行を追加（フロントのgetTextに寄せる）
+			if isBlockBoundary(t) {
+				s := b.String()
+				if s != "" && !strings.HasSuffix(s, "\n") {
+					b.WriteString("\n")
+				}
+			}
+
+		case []any:
+			for _, val := range x {
+				walk(val, parent)
+			}
+		default:
+		}
+	}
+
+	walk(v, "")
+
+	// 改行もカウントする（フロントの editor.getText().length に寄せる）
+	out := b.String()
+	return len([]rune(out)), nil
 }
 
 // GetPressReleaseHandler はプレスリリースを取得するハンドラー
@@ -115,6 +199,27 @@ func SavePressReleaseHandler(w http.ResponseWriter, r *http.Request) {
 		Title:   title,
 		Content: content,
 	}
+
+	// --- 3-3: バックエンドバリデーション（タイトル100文字、本文500文字） ---
+	if len([]rune(req.Title)) > titleMaxChars {
+		respondWithError(w, http.StatusBadRequest, "TITLE_TOO_LONG", "Title must be 100 characters or less")
+		return
+	}
+
+	bodyLen, err := tiptapGetTextLengthFromJSON(req.Content)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "INVALID_CONTENT_JSON", "Invalid content JSON")
+		return
+	}
+
+	// 確認用：バックエンドで受け取った本文文字数をログに出す
+	log.Printf("content length (getText-like): %d", bodyLen)
+
+	if bodyLen > bodyMaxChars {
+		respondWithError(w, http.StatusBadRequest, "CONTENT_TOO_LONG", "Content must be 500 characters or less")
+		return
+	}
+	// --- ここまで ---
 
 	db := GetDB()
 	ctx := context.Background()
