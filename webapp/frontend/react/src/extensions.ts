@@ -10,6 +10,7 @@ import Link from "@tiptap/extension-link";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
+import { LinkCard } from "./components/linkCard";
 
 export const editorExtensions = [
   Document,
@@ -32,4 +33,5 @@ export const editorExtensions = [
   BulletList,
   OrderedList,
   ListItem,
+  LinkCard, // OGPリンクカード
 ];

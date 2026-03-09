@@ -4,10 +4,13 @@ import {
   usePressReleaseQuery,
   useSavePressReleaseMutation,
 } from "./hooks/usePressRelease";
+import { useAutoSave } from "./hooks/useAutoSave";
 import { editorExtensions } from "./extensions";
+import { ImageDropPaste } from "./hooks/useImageDropPaste";
 import EditorToolbar from "./components/EditorToolbar";
 import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
+import LinkCardToolbar from "./components/LinkCardToolbar";
 import CharacterCount from "./components/CharacterCount";
 import ValidationAlert from "./components/ValidationAlert";
 import { BODY_MAX, TITLE_MAX } from "./constants";
@@ -30,7 +33,7 @@ function Page({ title: initialTitle, content }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
 
   const editor = useEditor({
-    extensions: editorExtensions,
+    extensions: [...editorExtensions, ImageDropPaste],
     content,
   });
 
@@ -65,6 +68,8 @@ function Page({ title: initialTitle, content }: PageProps) {
   const [showValidation, setShowValidation] = useState(false);
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
+
+  useAutoSave(editor ?? null, title, save);
 
   const handleSave = () => {
     if (!editor) return;
@@ -119,7 +124,8 @@ function Page({ title: initialTitle, content }: PageProps) {
 
           <EditorToolbar editor={editor ?? null} />
           <ListLinkToolbar editor={editor ?? null} />
-          <ImageToolbar editor={editor ?? null} />
+          <ImageToolbar editor={editor ?? null} onSave={handleSave} />
+          <LinkCardToolbar editor={editor ?? null} />
           <EditorContent editor={editor} />
         </div>
       </main>
