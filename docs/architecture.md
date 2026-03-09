@@ -23,6 +23,7 @@
 | 言語 | TypeScript | 5.9.3 |
 | ビルドツール | Vite | 7.3.1 |
 | リッチエディタ | TipTap | 3.20.0 |
+| 画像挿入拡張 | @tiptap/extension-image | 3.20.1 |
 | データ取得 | TanStack React Query | 5.90.21 |
 
 ---
