@@ -230,11 +230,11 @@ curl -X DELETE http://localhost:8080/v1/press_release/1/tags/12
 ```
 
 ### GET /v1/search
-記事の検索を行います。`q`（全文検索）と `tags`（カンマ区切りスラグ）を組み合わせて利用できます。
+記事の検索を行います。`q`（全文検索）と `tag_ids`（カンマ区切りのタグID）を組み合わせて利用できます。タグIDは `/api/v1/tags/suggest` のレスポンスの `id` フィールドを使用してください。
 
 リクエスト例:
 ```bash
-curl "http://localhost:8080/v1/search?q=AI&tags=ai,it&page=1&per_page=10"
+curl "http://localhost:8080/api/v1/search?q=AI&tag_ids=1,2&page=1&per_page=10"
 ```
 
 レスポンス例:
@@ -267,12 +267,12 @@ curl "http://localhost:8080/v1/search?q=AI&tags=ai,it&page=1&per_page=10"
 ```
 
 ### GET /api/v1/recommend
-エディタ上でのリアルタイム推薦検索用API。`q`（キーワード）または `tags`（カンマ区切りスラグ）を受け取り、関連記事を配列で返します。
+エディタ上でのリアルタイム推薦検索用API。`q`（キーワード）または `tag_ids`（カンマ区切りのタグID）を受け取り、関連記事を配列で返します。タグIDは `/api/v1/tags/suggest` のレスポンスの `id` フィールドを使用してください。
 
 リクエスト例:
 ```bash
 curl "http://localhost:8080/api/v1/recommend?q=AI&limit=8"
-curl "http://localhost:8080/api/v1/recommend?tags=it,ai&limit=8"
+curl "http://localhost:8080/api/v1/recommend?tag_ids=1,2&limit=8"
 ```
 
 レスポンス例（配列を直返し）:
