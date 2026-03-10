@@ -22,7 +22,7 @@ export function useTagSuggestQuery(q: string) {
         throw new Error(`HTTPエラー: ${response.status}`);
       }
       const data = await response.json();
-      return data.items as TagItem[];
+      return (data.items ?? []) as TagItem[];
     },
   });
 }

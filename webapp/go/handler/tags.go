@@ -91,7 +91,7 @@ func SuggestTagsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var items []model.Tag
+	items := make([]model.Tag, 0)
 	for rows.Next() {
 		var tg model.Tag
 		var cnt int
