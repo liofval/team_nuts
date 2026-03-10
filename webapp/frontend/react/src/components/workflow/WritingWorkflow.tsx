@@ -1,7 +1,42 @@
 import type { Editor } from "@tiptap/react";
 import { useState } from "react";
+import { BASE_URL } from "../../constants";
 import { TEMPLATES, applyTemplate } from "../../templates";
 import "./WritingWorkflow.css";
+
+type TitleCandidate = {
+  title: string;
+  type: string;
+  description: string;
+};
+
+const DUMMY_TITLE_CANDIDATES: TitleCandidate[] = [
+  {
+    title: "当社の新サービス開始に関するお知らせ",
+    type: "王道・ニュース型",
+    description: "最もオーソドックスな形式で、事実を端的に伝えます。メディアが引用しやすい構成です。",
+  },
+  {
+    title: "「○○の課題」を解決する新サービスを本日より提供開始",
+    type: "課題解決型",
+    description: "ターゲットが抱える課題を冒頭に置き、解決策として自社サービスを提示します。",
+  },
+  {
+    title: "創業から10年、町工場の挑戦が生んだ新サービスの全貌",
+    type: "ストーリー型",
+    description: "開発の背景や想いをストーリーとして伝え、読者の共感を引き出します。",
+  },
+  {
+    title: "2025年注目のDXトレンドに対応した新サービスを発表",
+    type: "トレンド型",
+    description: "業界のトレンドやキーワードと結びつけて、時流に乗った印象を与えます。",
+  },
+  {
+    title: "導入企業の業務時間を50%削減した新サービスを一般公開",
+    type: "インパクト型",
+    description: "具体的な数値や成果を前面に出し、インパクトのある印象を与えます。",
+  },
+];
 
 const CHECKLIST_SECTIONS = [
   {
@@ -98,11 +133,12 @@ export default function WritingWorkflow({
   const [isOpen, setIsOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [titleCandidates, setTitleCandidates] = useState<string[]>([]);
+  const [titleCandidates, setTitleCandidates] = useState<TitleCandidate[]>([]);
   const [selectedTitleIndex, setSelectedTitleIndex] = useState<number | null>(
     null,
   );
   const [isGenerating, setIsGenerating] = useState(false);
+  const [targetAudience, setTargetAudience] = useState("");
 
   // チェックリスト用state
   const [activeChecklist, setActiveChecklist] = useState<number | null>(null);
@@ -154,11 +190,13 @@ export default function WritingWorkflow({
     setSelectedTitleIndex(null);
 
     try {
-      const res = await fetch("/generate-title", {
+      const res = await fetch(`${BASE_URL}/generate-title`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           body: editor.getText(),
+          target_audience: targetAudience,
+          tags: [],
         }),
       });
 
@@ -168,11 +206,7 @@ export default function WritingWorkflow({
       setTitleCandidates(data.titles ?? []);
     } catch {
       // API未実装の場合はダミーデータを表示
-      setTitleCandidates([
-        "当社の新たな取り組みに関する重要なお知らせ",
-        `【プレスリリース】${new Date().getFullYear()}年の最新情報`,
-        "事業拡大に向けた新たな一歩について",
-      ]);
+      setTitleCandidates(DUMMY_TITLE_CANDIDATES);
     } finally {
       setIsGenerating(false);
     }
@@ -180,7 +214,7 @@ export default function WritingWorkflow({
 
   const applySelectedTitle = () => {
     if (selectedTitleIndex === null) return;
-    setTitle(titleCandidates[selectedTitleIndex]);
+    setTitle(titleCandidates[selectedTitleIndex].title);
   };
 
   const sectionProgress = (sectionIndex: number) => {
@@ -311,20 +345,31 @@ export default function WritingWorkflow({
         </div>
         {activeStep === 3 && (
           <div className="stepBody">
+            <div className="targetAudienceField">
+              <label className="targetAudienceLabel">ターゲット読者</label>
+              <input
+                type="text"
+                className="targetAudienceInput"
+                placeholder="例：業界専門誌の記者、地元の主婦層"
+                value={targetAudience}
+                onChange={(e) => setTargetAudience(e.target.value)}
+              />
+            </div>
             <button
               className="generateTitleButton"
               onClick={generateTitles}
               disabled={isGenerating}
             >
-              {isGenerating ? "生成中です..." : "タイトルを生成する"}
+              {isGenerating ? "生成中です..." : "AIでタイトルを生成する"}
             </button>
 
             {isGenerating && (
-              <p className="generatingText">AIがタイトルを考えております...</p>
+              <p className="generatingText">AIがタイトル候補を作成しております...</p>
             )}
 
             {titleCandidates.length > 0 && (
               <>
+                <p className="titleCandidatesHint">候補からタイトルを選択してください</p>
                 <div className="titleCandidates">
                   {titleCandidates.map((candidate, i) => (
                     <label
@@ -339,7 +384,11 @@ export default function WritingWorkflow({
                         checked={selectedTitleIndex === i}
                         onChange={() => setSelectedTitleIndex(i)}
                       />
-                      <span>{candidate}</span>
+                      <div className="titleCandidateContent">
+                        <span className="titleCandidateType">{candidate.type}</span>
+                        <span className="titleCandidateTitle">{candidate.title}</span>
+                        <span className="titleCandidateDesc">{candidate.description}</span>
+                      </div>
                     </label>
                   ))}
                 </div>
@@ -352,7 +401,7 @@ export default function WritingWorkflow({
                     setActiveStep(4);
                   }}
                 >
-                  タイトルを適用して次へ進む
+                  このタイトルを適用して次へ進む
                 </button>
               </>
             )}
