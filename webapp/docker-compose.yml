@@ -36,6 +36,16 @@ services:
       postgresql:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ./frontend/react
+    container_name: press-release-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - app
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   uploads_data:
