@@ -50,11 +50,7 @@ export default function ReferenceSearchOverlay({ open, onClose, editor }: Props)
     isError,
   } = useReferenceSearch({ limit: 8 });
 
-  //const items = useMemo(() => data ?? [], [data]);
-  const items = useMemo(() => {
-  if (USE_MOCK_ITEMS) return MOCK_ITEMS;
-  return data ?? [];
-  }, [data]);
+  const items = useMemo(() => data ?? [], [data]);
 
   const [selected, setSelected] = useState<Article | null>(null);
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
