@@ -135,44 +135,45 @@
   padding: 0 0.75rem 0.75rem;
 }
 
-/* ── Step 1: キーワード選択 ── */
-.keywordChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.75rem;
+/* ── Step 2: テンプレート選択 ── */
+.templateHint {
+  font-size: 0.8rem;
+  color: #555;
+  margin: 0 0 0.5rem;
 }
 
-.keywordChip {
-  padding: 0.3rem 0.65rem;
-  font-size: 0.78rem;
-  border: 1.5px solid #007bff;
-  border-radius: 20px;
-  background: white;
-  color: #007bff;
+.templateList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.templateOption {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.8rem;
   transition: all 0.15s;
 }
 
-.keywordChip:hover {
+.templateOption:hover {
+  border-color: #007bff;
+  background-color: #f0f4ff;
+}
+
+.templateOption.templateOptionSelected {
+  border-color: #007bff;
   background-color: #e8f0fe;
 }
 
-.keywordChip.chipSelected {
-  background-color: #007bff;
-  color: white;
-}
-
-/* ── Step 2: 本文 ── */
-.templateSuggestion {
-  font-size: 0.8rem;
-  color: #555;
-  background: #f0f4ff;
-  padding: 0.6rem;
-  border-radius: 6px;
-  margin-bottom: 0.6rem;
-  line-height: 1.5;
-  white-space: pre-line;
+.templateRadio {
+  accent-color: #007bff;
+  flex-shrink: 0;
 }
 
 .applyTemplateButton {
@@ -184,10 +185,16 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin-bottom: 0.5rem;
 }
 
-.applyTemplateButton:hover {
+.applyTemplateButton:hover:not(:disabled) {
   background-color: #0056b3;
+}
+
+.applyTemplateButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
 }
 
 /* ── Step 3: AIタイトル ── */
@@ -299,20 +306,6 @@
   border: 1px solid #e0e0e0;
   word-break: break-word;
   line-height: 1.4;
-}
-
-.reviewKeywords {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.reviewKeywordTag {
-  padding: 0.15rem 0.5rem;
-  font-size: 0.75rem;
-  background-color: #007bff;
-  color: white;
-  border-radius: 12px;
 }
 
 .saveWorkflowButton {

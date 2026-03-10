@@ -2,20 +2,10 @@ import type { Editor } from "@tiptap/react";
 import { useState } from "react";
 import "./WritingWorkflow.css";
 
-const KEYWORDS = [
-  "#新製品",
-  "#サービス開始",
-  "#提携",
-  "#受賞",
-  "#イベント",
-  "#採用",
-  "#決算",
-] as const;
-
-type Keyword = (typeof KEYWORDS)[number];
-
-const KEYWORD_TEMPLATES: Record<Keyword, string> = {
-  "#新製品": `【新製品に関するプレスリリース】
+const TEMPLATES = [
+  {
+    name: "新製品リリース",
+    content: `【新製品に関するプレスリリース】
 
 ■ リード文
 [会社名]は、[日付]に[新製品名]を発売することをお知らせいたします。
@@ -31,7 +21,10 @@ const KEYWORD_TEMPLATES: Record<Keyword, string> = {
 ■ 製品の詳細
 
 ■ お問い合わせ先`,
-  "#サービス開始": `【新サービス開始に関するプレスリリース】
+  },
+  {
+    name: "新サービス開始",
+    content: `【新サービス開始に関するプレスリリース】
 
 ■ リード文
 [会社名]は、[日付]より[サービス名]の提供を開始いたします。
@@ -47,7 +40,10 @@ const KEYWORD_TEMPLATES: Record<Keyword, string> = {
 ■ サービスの特長
 
 ■ お問い合わせ先`,
-  "#提携": `【業務提携に関するプレスリリース】
+  },
+  {
+    name: "業務提携",
+    content: `【業務提携に関するプレスリリース】
 
 ■ リード文
 [会社名]は、[提携先]と[提携内容]に関する業務提携契約を締結いたしました。
@@ -62,7 +58,10 @@ const KEYWORD_TEMPLATES: Record<Keyword, string> = {
 ■ 今後の展開
 
 ■ お問い合わせ先`,
-  "#受賞": `【受賞に関するプレスリリース】
+  },
+  {
+    name: "受賞・表彰",
+    content: `【受賞に関するプレスリリース】
 
 ■ リード文
 [会社名]の[対象]が、[賞名]を受賞いたしました。
@@ -77,7 +76,10 @@ const KEYWORD_TEMPLATES: Record<Keyword, string> = {
 ■ 今後の展望
 
 ■ お問い合わせ先`,
-  "#イベント": `【イベント開催に関するプレスリリース】
+  },
+  {
+    name: "イベント開催",
+    content: `【イベント開催に関するプレスリリース】
 
 ■ リード文
 [会社名]は、[日付]に[イベント名]を開催いたします。
@@ -94,7 +96,10 @@ const KEYWORD_TEMPLATES: Record<Keyword, string> = {
 ■ 参加申込方法
 
 ■ お問い合わせ先`,
-  "#採用": `【採用に関するプレスリリース】
+  },
+  {
+    name: "採用・人事",
+    content: `【採用に関するプレスリリース】
 
 ■ リード文
 [会社名]は、[役職・分野]の採用を強化いたします。
@@ -110,7 +115,10 @@ const KEYWORD_TEMPLATES: Record<Keyword, string> = {
 ■ 求める人材像
 
 ■ お問い合わせ先`,
-  "#決算": `【決算に関するプレスリリース】
+  },
+  {
+    name: "決算報告",
+    content: `【決算に関するプレスリリース】
 
 ■ リード文
 [会社名]は、[期間]の決算を発表いたします。
@@ -126,7 +134,8 @@ const KEYWORD_TEMPLATES: Record<Keyword, string> = {
 ■ 今後の見通し
 
 ■ お問い合わせ先`,
-};
+  },
+] as const;
 
 type Props = {
   editor: Editor | null;
@@ -144,20 +153,14 @@ export default function WritingWorkflow({
   const [isOpen, setIsOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
-  const [selectedKeywords, setSelectedKeywords] = useState<Keyword[]>([]);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
+    number | null
+  >(null);
   const [titleCandidates, setTitleCandidates] = useState<string[]>([]);
   const [selectedTitleIndex, setSelectedTitleIndex] = useState<number | null>(
     null,
   );
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const toggleKeyword = (keyword: Keyword) => {
-    setSelectedKeywords((prev) =>
-      prev.includes(keyword)
-        ? prev.filter((k) => k !== keyword)
-        : [...prev, keyword],
-    );
-  };
 
   const toggleStep = (step: number) => {
     setCompletedSteps((prev) => {
@@ -172,18 +175,20 @@ export default function WritingWorkflow({
   };
 
   const applyTemplate = () => {
-    if (!editor || selectedKeywords.length === 0) return;
-
-    const templates = selectedKeywords.map((kw) => KEYWORD_TEMPLATES[kw]);
-    const combined = templates.join("\n\n---\n\n");
+    if (!editor || selectedTemplateIndex === null) return;
 
     if (
-      !confirm("テンプレートを適用すると、現在の本文が上書きされます。よろしいですか？")
+      !confirm(
+        "テンプレートを適用すると、現在の本文が上書きされます。よろしいですか？",
+      )
     ) {
       return;
     }
 
-    editor.commands.setContent(`<p>${combined.replace(/\n/g, "<br>")}</p>`);
+    const template = TEMPLATES[selectedTemplateIndex];
+    editor.commands.setContent(
+      `<p>${template.content.replace(/\n/g, "<br>")}</p>`,
+    );
   };
 
   const generateTitles = async () => {
@@ -198,7 +203,6 @@ export default function WritingWorkflow({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          keywords: selectedKeywords,
           body: editor.getText(),
         }),
       });
@@ -209,11 +213,10 @@ export default function WritingWorkflow({
       setTitleCandidates(data.titles ?? []);
     } catch {
       // API未実装の場合はダミーデータを表示
-      const keywordText = selectedKeywords.join("・");
       setTitleCandidates([
-        `${keywordText}に関する重要なお知らせ`,
-        `【${selectedKeywords[0] ?? ""}】当社の新たな取り組みについて`,
-        `${keywordText}｜${new Date().getFullYear()}年の最新情報`,
+        "当社の新たな取り組みに関する重要なお知らせ",
+        `【プレスリリース】${new Date().getFullYear()}年の最新情報`,
+        "事業拡大に向けた新たな一歩について",
       ]);
     } finally {
       setIsGenerating(false);
@@ -237,12 +240,15 @@ export default function WritingWorkflow({
     <div className="workflowSidebar">
       <div className="workflowHeader">
         <h3 className="workflowTitle">執筆ワークフロー</h3>
-        <button className="workflowCloseButton" onClick={() => setIsOpen(false)}>
+        <button
+          className="workflowCloseButton"
+          onClick={() => setIsOpen(false)}
+        >
           &times;
         </button>
       </div>
 
-      {/* Step 1: キーワード選択 */}
+      {/* Step 1: キーワードを決める */}
       <div
         className={`workflowStep ${completedSteps.has(1) ? "stepCompleted" : ""} ${activeStep === 1 ? "stepActive" : ""}`}
       >
@@ -257,33 +263,6 @@ export default function WritingWorkflow({
           <span className="stepNumber">1</span>
           <span className="stepLabel">キーワードを決める</span>
         </div>
-        {activeStep === 1 && (
-          <div className="stepBody">
-            <div className="keywordChips">
-              {KEYWORDS.map((kw) => (
-                <button
-                  key={kw}
-                  className={`keywordChip ${selectedKeywords.includes(kw) ? "chipSelected" : ""}`}
-                  onClick={() => toggleKeyword(kw)}
-                >
-                  {kw}
-                </button>
-              ))}
-            </div>
-            <div className="stepNav">
-              <button
-                className="stepNavButton"
-                disabled={selectedKeywords.length === 0}
-                onClick={() => {
-                  if (!completedSteps.has(1)) toggleStep(1);
-                  setActiveStep(2);
-                }}
-              >
-                次へ
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Step 2: 本文を書く */}
@@ -303,17 +282,34 @@ export default function WritingWorkflow({
         </div>
         {activeStep === 2 && (
           <div className="stepBody">
-            {selectedKeywords.length > 0 && (
-              <>
-                <div className="templateSuggestion">
-                  選択キーワード: {selectedKeywords.join(", ")}
-                  {"\n"}テンプレートを適用してから本文を編集できます。
-                </div>
-                <button className="applyTemplateButton" onClick={applyTemplate}>
-                  テンプレートを適用
-                </button>
-              </>
-            )}
+            <p className="templateHint">
+              テンプレートを選んで本文に適用できます。
+            </p>
+            <div className="templateList">
+              {TEMPLATES.map((t, i) => (
+                <label
+                  key={i}
+                  className={`templateOption ${selectedTemplateIndex === i ? "templateOptionSelected" : ""}`}
+                  onClick={() => setSelectedTemplateIndex(i)}
+                >
+                  <input
+                    type="radio"
+                    name="template"
+                    className="templateRadio"
+                    checked={selectedTemplateIndex === i}
+                    onChange={() => setSelectedTemplateIndex(i)}
+                  />
+                  <span>{t.name}</span>
+                </label>
+              ))}
+            </div>
+            <button
+              className="applyTemplateButton"
+              disabled={selectedTemplateIndex === null}
+              onClick={applyTemplate}
+            >
+              テンプレートを適用
+            </button>
             <div className="stepNav">
               <button
                 className="stepNavButton"
@@ -413,20 +409,6 @@ export default function WritingWorkflow({
         {activeStep === 4 && (
           <div className="stepBody">
             <div className="reviewSection">
-              <div className="reviewItem">
-                <span className="reviewLabel">キーワード</span>
-                <div className="reviewKeywords">
-                  {selectedKeywords.length > 0 ? (
-                    selectedKeywords.map((kw) => (
-                      <span key={kw} className="reviewKeywordTag">
-                        {kw}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="reviewValue">未選択</span>
-                  )}
-                </div>
-              </div>
               <div className="reviewItem">
                 <span className="reviewLabel">タイトル</span>
                 <div className="reviewValue">{title || "未入力"}</div>
