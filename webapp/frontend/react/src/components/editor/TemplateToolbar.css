@@ -1,28 +1,15 @@
 /* ── テンプレートツールバー ── */
 .templateToolbar {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  position: relative;
+  display: inline-block;
   padding: 6px 1.5rem;
-  flex-wrap: wrap;
 }
 
-.templateToolbar__label {
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: #495057;
-  padding-top: 5px;
-  white-space: nowrap;
-}
-
-.templateToolbar__buttons {
-  display: flex;
-  flex-wrap: wrap;
+.templateToolbar__toggle {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-}
-
-.templateToolbar__btn {
-  padding: 5px 10px;
+  padding: 5px 12px;
   font-size: 0.82rem;
   font-weight: 500;
   color: #495057;
@@ -31,22 +18,61 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
 }
 
-.templateToolbar__btn:hover {
+.templateToolbar__toggle:hover {
   background: #e9ecef;
   border-color: #adb5bd;
   color: #212529;
 }
 
-.templateToolbar__btn--active {
+.templateToolbar__toggle--active {
   background: #007bff;
   border-color: #007bff;
   color: white;
 }
 
-.templateToolbar__btn--active:hover {
+.templateToolbar__toggle--active:hover {
   background: #0056b3;
   border-color: #0056b3;
+}
+
+.templateToolbar__arrow {
+  font-size: 0.65rem;
+}
+
+.templateToolbar__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 1.5rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 4px 0;
+}
+
+.templateToolbar__item {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  text-align: left;
+  color: #333;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.templateToolbar__item:hover {
+  background: #f0f4ff;
+}
+
+.templateToolbar__item--active {
+  background: #e8f0fe;
+  color: #007bff;
+  font-weight: 600;
 }

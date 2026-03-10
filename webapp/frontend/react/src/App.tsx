@@ -9,6 +9,7 @@ import { useBodyCount } from "./hooks/useBodyCount";
 import { useValidation } from "./hooks/useValidation";
 import { editorExtensions } from "./extensions";
 import EditorToolbar from "./components/editor/EditorToolbar";
+import ListLinkToolbar from "./components/editor/ListLinkToolbar";
 import TemplateToolbar from "./components/editor/TemplateToolbar";
 import ImageToolbar from "./components/editor/ImageToolbar";
 import LinkCardToolbar from "./components/editor/LinkCardToolbar";
@@ -115,6 +116,7 @@ function Page({ title: initialTitle, content }: PageProps) {
             <CharacterCount titleCount={titleCount} bodyCount={bodyCount} />
 
             <EditorToolbar editor={editor ?? null} />
+            <ListLinkToolbar editor={editor ?? null} />
             <TemplateToolbar
               editor={editor ?? null}
               selectedTemplateIndex={selectedTemplateIndex}

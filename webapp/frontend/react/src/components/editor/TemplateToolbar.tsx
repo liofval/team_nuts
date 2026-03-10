@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react";
-import { useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { TEMPLATES, applyTemplate } from "../../templates";
 import "./TemplateToolbar.css";
 
@@ -14,38 +14,58 @@ export default function TemplateToolbar({
   selectedTemplateIndex,
   onSelectTemplate,
 }: Props) {
+  const [isOpen, setIsOpen] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   if (!editor) return null;
 
-  const handleClick = useCallback(
-    (index: number) => {
-      if (
-        !confirm(
-          "テンプレートを適用すると、現在の本文が上書きされます。よろしいですか？",
-        )
-      ) {
-        return;
-      }
-      onSelectTemplate(index);
-      applyTemplate(editor, index);
-    },
-    [editor, onSelectTemplate],
-  );
+  const handleApply = (index: number) => {
+    if (
+      !confirm(
+        "テンプレートを適用すると、現在の本文が上書きされます。よろしいですか？",
+      )
+    ) {
+      return;
+    }
+    onSelectTemplate(index);
+    applyTemplate(editor, index);
+    setIsOpen(false);
+  };
 
   return (
-    <div className="templateToolbar">
-      <span className="templateToolbar__label">テンプレート:</span>
-      <div className="templateToolbar__buttons">
-        {TEMPLATES.map((t, i) => (
-          <button
-            key={i}
-            type="button"
-            className={`templateToolbar__btn ${selectedTemplateIndex === i ? "templateToolbar__btn--active" : ""}`}
-            onClick={() => handleClick(i)}
-          >
-            {t.name}
-          </button>
-        ))}
-      </div>
+    <div className="templateToolbar" ref={wrapperRef}>
+      <button
+        type="button"
+        className={`templateToolbar__toggle ${isOpen ? "templateToolbar__toggle--active" : ""}`}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        テンプレート
+        <span className="templateToolbar__arrow">{isOpen ? "▲" : "▼"}</span>
+      </button>
+      {isOpen && (
+        <div className="templateToolbar__dropdown">
+          {TEMPLATES.map((t, i) => (
+            <button
+              key={i}
+              type="button"
+              className={`templateToolbar__item ${selectedTemplateIndex === i ? "templateToolbar__item--active" : ""}`}
+              onClick={() => handleApply(i)}
+            >
+              {t.name}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
