@@ -17,8 +17,10 @@ import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
 import ValidationAlert from "./components/ValidationAlert";
+import { ReferenceSearchOverlay } from "./features/reference-search"; 
 import "./App.css";
 
+<div style={{ color: "red", fontWeight: 700 }}>DEBUG: BUTTON AREA</div>
 export function App() {
   const { data, isPending, isError } = usePressReleaseQuery();
 
@@ -39,6 +41,9 @@ function Page({ title: initialTitle, content }: PageProps) {
     extensions: editorExtensions,
     content,
   });
+
+  // 追加: reference search 開閉
+  const [isReferenceOpen, setIsReferenceOpen] = useState(false);
 
   const bodyCount = useBodyCount(editor);
   const titleCount = title.length;
@@ -77,6 +82,16 @@ function Page({ title: initialTitle, content }: PageProps) {
         <h1 className="title">プレスリリースエディター</h1>
         <div className="headerActions">
           <DocxImport editor={editor ?? null} onImport={handleDocxImport} />
+
+          {/* 追加: 参考記事検索 */}
+          <button
+            type="button"
+            className="saveButton"
+            onClick={() => setIsReferenceOpen(true)}
+          >
+            参考記事を検索
+          </button>
+
           <button
             onClick={handleSave}
             className="saveButton"
@@ -87,7 +102,6 @@ function Page({ title: initialTitle, content }: PageProps) {
         </div>
       </header>
 
-      {/* 3-2: 画面上部にエラー表示（保存時のみ） */}
       {showValidation && validationMessages.length > 0 && (
         <ValidationAlert messages={validationMessages} />
       )}
@@ -99,10 +113,7 @@ function Page({ title: initialTitle, content }: PageProps) {
               <input
                 type="text"
                 value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  // 入力を変えたら再保存時に最新の判定を出す（表示自体は維持）
-                }}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="タイトルを入力してください"
                 className="titleInput"
               />
@@ -121,9 +132,17 @@ function Page({ title: initialTitle, content }: PageProps) {
             />
             <EditorContent editor={editor} />
           </div>
+
           <CommentSidebar editor={editor ?? null} onSave={handleSave} />
         </div>
       </main>
+
+      {/* 追加: Overlay */}
+      <ReferenceSearchOverlay
+        open={isReferenceOpen}
+        onClose={() => setIsReferenceOpen(false)}
+        editor={editor ?? null}
+      />
     </div>
   );
 }
