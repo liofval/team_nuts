@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // ListCommentsHandler はプレスリリースに紐づくコメント一覧を取得
@@ -39,6 +41,7 @@ func ListCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		prID,
 	)
 	if err != nil {
+		log.Printf("ListCommentsHandler: query error press_release_id=%d err=%v", prID, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -50,6 +53,7 @@ func ListCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		var parentID *int
 		var createdAt, updatedAt time.Time
 		if err := rows.Scan(&c.ID, &c.PressReleaseID, &parentID, &c.CommentID, &c.Body, &c.Resolved, &createdAt, &updatedAt); err != nil {
+			log.Printf("ListCommentsHandler: rows.Scan error press_release_id=%d err=%v", prID, err)
 			httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 			return
 		}
@@ -57,6 +61,11 @@ func ListCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		c.CreatedAt = httputil.FormatTimestamp(createdAt)
 		c.UpdatedAt = httputil.FormatTimestamp(updatedAt)
 		allComments = append(allComments, c)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("ListCommentsHandler: rows iteration error press_release_id=%d err=%v", prID, err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
 	}
 
 	// ツリー構造に変換: 親コメントに返信をネスト
@@ -136,6 +145,13 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 	).Scan(&c.ID, &c.PressReleaseID, &parentID, &c.CommentID, &c.Body, &c.Resolved, &createdAt, &updatedAt)
 
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23503" {
+			// 外部キー制約違反: press_release_id または parent_id が存在しない
+			httputil.RespondWithError(w, http.StatusNotFound, "NOT_FOUND", "Press release or parent comment not found")
+			return
+		}
+		log.Printf("CreateCommentHandler: insert error press_release_id=%d err=%v", prID, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -174,6 +190,7 @@ func ResolveCommentHandler(w http.ResponseWriter, r *http.Request) {
 		httputil.RespondWithError(w, http.StatusNotFound, "NOT_FOUND", "Comment not found")
 		return
 	} else if err != nil {
+		log.Printf("ResolveCommentHandler: update error comment_id=%d err=%v", commentID, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -212,6 +229,7 @@ func UnresolveCommentHandler(w http.ResponseWriter, r *http.Request) {
 		httputil.RespondWithError(w, http.StatusNotFound, "NOT_FOUND", "Comment not found")
 		return
 	} else if err != nil {
+		log.Printf("UnresolveCommentHandler: update error comment_id=%d err=%v", commentID, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -238,6 +256,7 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	tag, err := pool.Exec(ctx, "DELETE FROM comments WHERE id = $1", commentID)
 	if err != nil {
+		log.Printf("DeleteCommentHandler: delete error comment_id=%d err=%v", commentID, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}

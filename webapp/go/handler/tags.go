@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -84,6 +85,7 @@ func SuggestTagsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		log.Printf("SuggestTagsHandler: query error: %v", err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -94,10 +96,16 @@ func SuggestTagsHandler(w http.ResponseWriter, r *http.Request) {
 		var tg model.Tag
 		var cnt int
 		if err := rows.Scan(&tg.ID, &tg.Name, &tg.Slug, &tg.Type, &cnt); err != nil {
+			log.Printf("SuggestTagsHandler: rows.Scan error: %v", err)
 			continue
 		}
 		tg.Count = cnt
 		items = append(items, tg)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("SuggestTagsHandler: rows iteration error: %v", err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
 	}
 
 	httputil.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"items": items})
@@ -164,6 +172,7 @@ func AssignTagsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := tx.Commit(ctx); err != nil {
+		log.Printf("AssignTagsHandler: commit error press_release_id=%d err=%v", id, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -252,6 +261,7 @@ func UpdateTagHandler(w http.ResponseWriter, r *http.Request) {
 			httputil.RespondWithError(w, http.StatusConflict, "DUPLICATE_SLUG", "A tag with that slug already exists")
 			return
 		}
+		log.Printf("UpdateTagHandler: update error tag_id=%d err=%v", tagID, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -293,6 +303,7 @@ func DeleteTagAssignmentHandler(w http.ResponseWriter, r *http.Request) {
 
 	_, err = pool.Exec(ctx, "DELETE FROM press_release_tags WHERE press_release_id = $1 AND tag_id = $2", id, tagID)
 	if err != nil {
+		log.Printf("DeleteTagAssignmentHandler: delete error press_release_id=%d tag_id=%d err=%v", id, tagID, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}

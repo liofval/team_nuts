@@ -45,6 +45,7 @@ func GetPressReleaseHandler(w http.ResponseWriter, r *http.Request) {
 		httputil.RespondWithError(w, http.StatusNotFound, "NOT_FOUND", "Press release not found")
 		return
 	} else if err != nil {
+		log.Printf("GetPressReleaseHandler: query error id=%d err=%v", id, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -134,6 +135,7 @@ func SavePressReleaseHandler(w http.ResponseWriter, r *http.Request) {
 	var exists bool
 	err = pool.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM press_releases WHERE id = $1)", id).Scan(&exists)
 	if err != nil {
+		log.Printf("SavePressReleaseHandler: existence check error id=%d err=%v", id, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,6 +44,7 @@ func OgpHandler(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := httpClient.Get(targetURL)
 	if err != nil {
+		log.Printf("OgpHandler: fetch error url=%s err=%v", targetURL, err)
 		http.Error(w, fmt.Sprintf("fetch error: %v", err), http.StatusBadGateway)
 		return
 	}
@@ -52,8 +54,9 @@ func OgpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 2<<20)) // 最大2MBを読み込む
 	if err != nil {
+		log.Printf("OgpHandler: failed to read response body url=%s err=%v", targetURL, err)
 		http.Error(w, "failed to read response", http.StatusInternalServerError)
 		return
 	}

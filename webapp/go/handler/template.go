@@ -19,10 +19,10 @@ import (
 )
 
 // parseTemplateRequest はリクエストボディからテンプレートデータをパースする
-func parseTemplateRequest(r *http.Request) (*model.SaveTemplateRequest, int, string, string) {
+func parseTemplateRequest(w http.ResponseWriter, r *http.Request) (*model.SaveTemplateRequest, int, string, string) {
 	const maxRequestBodyBytes = 1 << 20 // 1MB
 
-	limitedBody := http.MaxBytesReader(nil, r.Body, maxRequestBodyBytes)
+	limitedBody := http.MaxBytesReader(w, r.Body, maxRequestBodyBytes)
 	body, err := io.ReadAll(limitedBody)
 	if err != nil {
 		var maxBytesErr *http.MaxBytesError
@@ -73,6 +73,11 @@ func ListTemplatesHandler(w http.ResponseWriter, r *http.Request) {
 		t.UpdatedAt = httputil.FormatTimestamp(updatedAt)
 		templates = append(templates, t)
 	}
+	if err := rows.Err(); err != nil {
+		log.Printf("ListTemplatesHandler: rows iteration error: %v", err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
 
 	httputil.RespondWithJSON(w, http.StatusOK, templates)
 }
@@ -101,6 +106,7 @@ func GetTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		httputil.RespondWithError(w, http.StatusNotFound, "NOT_FOUND", "Template not found")
 		return
 	} else if err != nil {
+		log.Printf("GetTemplateHandler: query error id=%d err=%v", id, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -114,7 +120,7 @@ func GetTemplateHandler(w http.ResponseWriter, r *http.Request) {
 // CreateTemplateHandler はテンプレートを新規作成するハンドラー
 // POST /templates
 func CreateTemplateHandler(w http.ResponseWriter, r *http.Request) {
-	req, status, code, message := parseTemplateRequest(r)
+	req, status, code, message := parseTemplateRequest(w, r)
 	if req == nil {
 		httputil.RespondWithError(w, status, code, message)
 		return
@@ -134,6 +140,7 @@ func CreateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 	).Scan(&t.ID, &t.Name, &t.Title, &t.Content, &createdAt, &updatedAt)
 
 	if err != nil {
+		log.Printf("CreateTemplateHandler: insert error: %v", err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -154,7 +161,7 @@ func UpdateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req, status, code, message := parseTemplateRequest(r)
+	req, status, code, message := parseTemplateRequest(w, r)
 	if req == nil {
 		httputil.RespondWithError(w, status, code, message)
 		return
@@ -178,6 +185,7 @@ func UpdateTemplateHandler(w http.ResponseWriter, r *http.Request) {
 		httputil.RespondWithError(w, http.StatusNotFound, "NOT_FOUND", "Template not found")
 		return
 	} else if err != nil {
+		log.Printf("UpdateTemplateHandler: update error id=%d err=%v", id, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
@@ -203,6 +211,7 @@ func DeleteTemplateHandler(w http.ResponseWriter, r *http.Request) {
 
 	tag, err := pool.Exec(ctx, "DELETE FROM templates WHERE id = $1", id)
 	if err != nil {
+		log.Printf("DeleteTemplateHandler: delete error id=%d err=%v", id, err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}
