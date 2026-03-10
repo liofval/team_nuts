@@ -1,0 +1,52 @@
+/* ── テンプレートツールバー ── */
+.templateToolbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 1.5rem;
+  flex-wrap: wrap;
+}
+
+.templateToolbar__label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #495057;
+  padding-top: 5px;
+  white-space: nowrap;
+}
+
+.templateToolbar__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.templateToolbar__btn {
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #495057;
+  background: transparent;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.templateToolbar__btn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+  color: #212529;
+}
+
+.templateToolbar__btn--active {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.templateToolbar__btn--active:hover {
+  background: #0056b3;
+  border-color: #0056b3;
+}

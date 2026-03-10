@@ -9,7 +9,7 @@ import { useBodyCount } from "./hooks/useBodyCount";
 import { useValidation } from "./hooks/useValidation";
 import { editorExtensions } from "./extensions";
 import EditorToolbar from "./components/editor/EditorToolbar";
-import ListLinkToolbar from "./components/editor/ListLinkToolbar";
+import TemplateToolbar from "./components/editor/TemplateToolbar";
 import ImageToolbar from "./components/editor/ImageToolbar";
 import LinkCardToolbar from "./components/editor/LinkCardToolbar";
 import DocxImport from "./components/DocxImport";
@@ -34,6 +34,9 @@ type PageProps = {
 
 function Page({ title: initialTitle, content }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
+    number | null
+  >(null);
 
   const editor = useEditor({
     extensions: editorExtensions,
@@ -93,6 +96,8 @@ function Page({ title: initialTitle, content }: PageProps) {
             title={title}
             setTitle={setTitle}
             onSave={handleSave}
+            selectedTemplateIndex={selectedTemplateIndex}
+            onSelectTemplate={setSelectedTemplateIndex}
           />
           <div className="editorWrapper">
             <div className="titleInputWrapper">
@@ -101,7 +106,6 @@ function Page({ title: initialTitle, content }: PageProps) {
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
-                  // 入力を変えたら再保存時に最新の判定を出す（表示自体は維持）
                 }}
                 placeholder="タイトルを入力してください"
                 className="titleInput"
@@ -111,7 +115,11 @@ function Page({ title: initialTitle, content }: PageProps) {
             <CharacterCount titleCount={titleCount} bodyCount={bodyCount} />
 
             <EditorToolbar editor={editor ?? null} />
-            <ListLinkToolbar editor={editor ?? null} />
+            <TemplateToolbar
+              editor={editor ?? null}
+              selectedTemplateIndex={selectedTemplateIndex}
+              onSelectTemplate={setSelectedTemplateIndex}
+            />
             <ImageToolbar editor={editor ?? null} onSave={handleSave} />
             <LinkCardToolbar editor={editor ?? null} />
             <EditorContent editor={editor} />
