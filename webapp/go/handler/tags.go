@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // GET /api/v1/tags/suggest?q=&type=&limit=
@@ -220,6 +222,11 @@ func UpdateTagHandler(w http.ResponseWriter, r *http.Request) {
 	query := "UPDATE tags SET " + strings.Join(sets, ", ") + " WHERE id = $" + strconv.Itoa(i)
 
 	if _, err := pool.Exec(ctx, query, args...); err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			httputil.RespondWithError(w, http.StatusConflict, "DUPLICATE_SLUG", "A tag with that slug already exists")
+			return
+		}
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
 		return
 	}

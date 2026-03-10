@@ -10,10 +10,10 @@ import (
 	"press-release-editor/httputil"
 )
 
-// GET /api/v1/search?q=&tags=&page=&per_page=
+// GET /api/v1/search?q=&tag_ids=&page=&per_page=
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
-	tagsParam := strings.TrimSpace(r.URL.Query().Get("tags"))
+	tagsParam := strings.TrimSpace(r.URL.Query().Get("tag_ids"))
 	pageStr := r.URL.Query().Get("page")
 	perPageStr := r.URL.Query().Get("per_page")
 	page := 1
@@ -39,27 +39,34 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 	argi := 1
 
 	if tagsParam != "" {
-		tags := strings.Split(tagsParam, ",")
-		// join with press_release_tags and tags
-		// we'll use EXISTS with tag slugs
-		whereClauses = append(whereClauses, "EXISTS (SELECT 1 FROM press_release_tags prt JOIN tags t ON prt.tag_id = t.id WHERE prt.press_release_id = pr.id AND t.slug = ANY($"+strconv.Itoa(argi)+"))")
-		args = append(args, pqStringArray(tags))
-		argi++
-		// Note: simple approach treats as OR; for AND mode more complex query needed
+		var tagIDs []int64
+		for _, s := range strings.Split(tagsParam, ",") {
+			if v, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64); err == nil && v > 0 {
+				tagIDs = append(tagIDs, v)
+			}
+		}
+		if len(tagIDs) > 0 {
+			whereClauses = append(whereClauses, "EXISTS (SELECT 1 FROM press_release_tags prt WHERE prt.press_release_id = pr.id AND prt.tag_id = ANY($"+strconv.Itoa(argi)+"))")
+			args = append(args, tagIDs)
+			argi++
+		}
 	}
 
 	if q != "" {
-		whereClauses = append(whereClauses, "pr.document_tsv @@ plainto_tsquery('japanese', $"+strconv.Itoa(argi)+")")
+		// use 'simple' config to avoid requiring additional text search configs
+		whereClauses = append(whereClauses, "pr.document_tsv @@ plainto_tsquery('simple', $"+strconv.Itoa(argi)+")")
 		args = append(args, q)
 		argi++
 	}
 
-	where := "WHERE pr.is_public = true"
+	// Some deployments may not have `is_public`/`published_at` columns.
+	// Use `created_at` as a stable ordering column and avoid filtering by `is_public`.
+	where := "WHERE 1=1"
 	if len(whereClauses) > 0 {
 		where += " AND " + strings.Join(whereClauses, " AND ")
 	}
 
-	query := "SELECT pr.id, pr.title, pr.main_image_url, pr.excerpt, pr.published_at FROM press_releases pr " + where + " ORDER BY pr.published_at DESC LIMIT $" + strconv.Itoa(argi) + " OFFSET $" + strconv.Itoa(argi+1)
+	query := "SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, '') as excerpt, pr.created_at FROM press_releases pr " + where + " ORDER BY pr.created_at DESC LIMIT $" + strconv.Itoa(argi) + " OFFSET $" + strconv.Itoa(argi+1)
 	args = append(args, perPage, offset)
 
 	rows, err := pool.Query(ctx, query, args...)
@@ -92,10 +99,4 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		"per_page": perPage,
 		"items":    items,
 	})
-}
-
-// pqStringArray creates a PostgreSQL text[] parameter (driver independent simple helper)
-func pqStringArray(ss []string) interface{} {
-	// pgx accepts []string directly for text[]
-	return ss
 }

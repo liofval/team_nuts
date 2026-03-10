@@ -13,10 +13,10 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// GET /api/v1/recommend?q=&tags=&limit=
+// GET /api/v1/recommend?q=&tag_ids=&limit=
 func RecommendHandler(w http.ResponseWriter, r *http.Request) {
 	q := strings.TrimSpace(r.URL.Query().Get("q"))
-	tagsParam := strings.TrimSpace(r.URL.Query().Get("tags"))
+	tagsParam := strings.TrimSpace(r.URL.Query().Get("tag_ids"))
 	limitStr := r.URL.Query().Get("limit")
 	limit := 8
 	if limitStr != "" {
@@ -28,30 +28,37 @@ func RecommendHandler(w http.ResponseWriter, r *http.Request) {
 	pool := db.GetDB()
 	ctx := context.Background()
 
+	// parse tag_ids param into []int64; empty/invalid entries are ignored
+	var tagIDs []int64
+	for _, s := range strings.Split(tagsParam, ",") {
+		if v, err := strconv.ParseInt(strings.TrimSpace(s), 10, 64); err == nil && v > 0 {
+			tagIDs = append(tagIDs, v)
+		}
+	}
+
 	var rows pgx.Rows
 	var err error
 
-	if tagsParam != "" {
-		tags := strings.Split(tagsParam, ",")
+	switch {
+	case len(tagIDs) > 0:
 		rows, err = pool.Query(ctx, `
-            SELECT pr.id, pr.title, pr.main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at
+            SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at
             FROM press_releases pr
             JOIN press_release_tags prt ON pr.id = prt.press_release_id
-            JOIN tags t ON prt.tag_id = t.id
-            WHERE t.slug = ANY($1)
+            WHERE prt.tag_id = ANY($1)
             GROUP BY pr.id
-            ORDER BY COUNT(DISTINCT t.id) DESC, pr.created_at DESC
-            LIMIT $2`, tags, limit)
-	} else if q != "" {
+            ORDER BY COUNT(DISTINCT prt.tag_id) DESC, pr.created_at DESC
+            LIMIT $2`, tagIDs, limit)
+	case q != "":
 		rows, err = pool.Query(ctx, `
-            SELECT pr.id, pr.title, pr.main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at
+            SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at
             FROM press_releases pr
-            WHERE pr.document_tsv @@ plainto_tsquery('japanese', $1)
-            ORDER BY ts_rank(pr.document_tsv, plainto_tsquery('japanese', $1)) DESC, pr.created_at DESC
+            WHERE pr.document_tsv @@ plainto_tsquery('simple', $1)
+            ORDER BY ts_rank(pr.document_tsv, plainto_tsquery('simple', $1)) DESC, pr.created_at DESC
             LIMIT $2`, q, limit)
-	} else {
+	default:
 		rows, err = pool.Query(ctx, `
-            SELECT id, title, main_image_url, COALESCE(excerpt, substring(content for 200)) as excerpt, created_at
+            SELECT id, title, COALESCE(main_image_url, '') as main_image_url, COALESCE(excerpt, substring(content for 200)) as excerpt, created_at
             FROM press_releases
             ORDER BY created_at DESC
             LIMIT $1`, limit)
@@ -63,7 +70,7 @@ func RecommendHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var items []map[string]interface{}
+	items := []map[string]interface{}{}
 	for rows.Next() {
 		var id int
 		var title, img, excerpt string
@@ -125,13 +132,13 @@ func SimilarPressReleasesHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var items []map[string]interface{}
+	items := []map[string]interface{}{}
 	selected := map[int]bool{}
 
 	if len(tagIDs) > 0 {
 		// tag-based matches
 		rows, err := pool.Query(ctx, `
-            SELECT pr.id, pr.title, pr.main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, COUNT(*) as tag_count
+            SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, COUNT(*) as tag_count
             FROM press_releases pr
             JOIN press_release_tags prt ON pr.id = prt.press_release_id
             WHERE prt.tag_id = ANY($1) AND pr.id != $2
@@ -171,9 +178,9 @@ func SimilarPressReleasesHandler(w http.ResponseWriter, r *http.Request) {
 		if err == nil {
 			q := content
 			rows, err := pool.Query(ctx, `
-                SELECT pr.id, pr.title, pr.main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, ts_rank(pr.document_tsv, plainto_tsquery('japanese', $1)) as rank
+                SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, ts_rank(pr.document_tsv, plainto_tsquery('simple', $1)) as rank
                 FROM press_releases pr
-                WHERE pr.document_tsv @@ plainto_tsquery('japanese', $1) AND pr.id != $2
+                WHERE pr.document_tsv @@ plainto_tsquery('simple', $1) AND pr.id != $2
                 ORDER BY rank DESC, pr.created_at DESC
                 LIMIT $3`, q, id, limit)
 			if err == nil {
