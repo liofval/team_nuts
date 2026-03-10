@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -143,6 +144,9 @@ func AssignTagsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// collect tag IDs that should remain assigned
+	keptTagIDs := make([]int, 0)
+
 	for _, name := range req.Tags {
 		name = strings.TrimSpace(name)
 		if name == "" {
@@ -169,6 +173,33 @@ func AssignTagsHandler(w http.ResponseWriter, r *http.Request) {
 
 		// insert into press_release_tags if not exists
 		_, _ = tx.Exec(ctx, "INSERT INTO press_release_tags (press_release_id, tag_id) VALUES ($1,$2) ON CONFLICT DO NOTHING", id, tagID)
+		// mark as kept
+		keptTagIDs = append(keptTagIDs, tagID)
+	}
+
+	// remove assignments not present in keptTagIDs
+	if len(keptTagIDs) == 0 {
+		// delete all assignments
+		if _, err := tx.Exec(ctx, "DELETE FROM press_release_tags WHERE press_release_id = $1", id); err != nil {
+			log.Printf("AssignTagsHandler: delete all assignments error press_release_id=%d err=%v", id, err)
+			httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+			return
+		}
+	} else {
+		// build placeholder list for NOT IN
+		placeholders := make([]string, 0, len(keptTagIDs))
+		args := make([]interface{}, 0, len(keptTagIDs)+1)
+		args = append(args, id)
+		for i, tid := range keptTagIDs {
+			placeholders = append(placeholders, fmt.Sprintf("$%d", i+2))
+			args = append(args, tid)
+		}
+		query := fmt.Sprintf("DELETE FROM press_release_tags WHERE press_release_id = $1 AND tag_id NOT IN (%s)", strings.Join(placeholders, ","))
+		if _, err := tx.Exec(ctx, query, args...); err != nil {
+			log.Printf("AssignTagsHandler: delete missing assignments error press_release_id=%d err=%v", id, err)
+			httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+			return
+		}
 	}
 
 	if err := tx.Commit(ctx); err != nil {
