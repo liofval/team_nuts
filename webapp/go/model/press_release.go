@@ -16,6 +16,20 @@ type SavePressReleaseRequest struct {
 	Content string `json:"content"`
 }
 
+// PressReleaseSummary はプレスリリース一覧表示用の構造体
+type PressReleaseSummary struct {
+	ID        int    `json:"id"`
+	Title     string `json:"title"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
+// CreatePressReleaseRequest はプレスリリース新規作成リクエストのデータ構造
+type CreatePressReleaseRequest struct {
+	Title   string `json:"title"`
+	Content string `json:"content"`
+}
+
 const (
 	TitleMaxChars = 100
 	BodyMaxChars  = 500

@@ -1,8 +1,10 @@
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   usePressReleaseQuery,
   useSavePressReleaseMutation,
+  usePressReleaseListQuery,
+  useCreatePressReleaseMutation,
 } from "./hooks/usePressRelease";
 import { useAutoSave } from "./hooks/useAutoSave";
 import { useBodyCount } from "./hooks/useBodyCount";
@@ -20,16 +22,80 @@ import CommentSidebar from "./components/comment/CommentSidebar";
 import LeftSidebar from "./components/workflow/LeftSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import TagInput from "./components/TagInput/TagInput";
+import ArticleList from "./components/ArticleList/ArticleList";
 import { ReferenceSearchOverlay } from "./features/reference-search";
 import "./App.css";
 
+function getIdFromUrl(): number | null {
+  const params = new URLSearchParams(window.location.search);
+  const v = params.get("id");
+  if (!v) return null;
+  const n = parseInt(v, 10);
+  return isNaN(n) || n <= 0 ? null : n;
+}
+
+function setIdInUrl(id: number) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("id", String(id));
+  window.history.replaceState(null, "", url.toString());
+}
+
 export function App() {
-  const { data, isPending, isError } = usePressReleaseQuery();
+  const { data: articles = [], isPending: listPending } = usePressReleaseListQuery();
+  const { mutate: createNew, isPending: isCreating } = useCreatePressReleaseMutation();
+
+  const [selectedId, setSelectedId] = useState<number | null>(getIdFromUrl);
+
+  // 一覧が取得できたら初期IDを決定
+  useEffect(() => {
+    if (listPending || articles.length === 0) return;
+    const urlId = getIdFromUrl();
+    const valid = urlId && articles.some((a) => a.id === urlId);
+    if (!valid) {
+      const first = articles[0].id;
+      setSelectedId(first);
+      setIdInUrl(first);
+    }
+  }, [listPending, articles]);
+
+  const handleSelect = (id: number) => {
+    setSelectedId(id);
+    setIdInUrl(id);
+  };
+
+  const handleCreateNew = () => {
+    createNew(undefined, {
+      onSuccess: (created) => {
+        setSelectedId(created.id);
+        setIdInUrl(created.id);
+      },
+    });
+  };
+
+  return (
+    <div className="appShell">
+      <ArticleList
+        articles={articles}
+        selectedId={selectedId}
+        onSelect={handleSelect}
+        onCreateNew={handleCreateNew}
+        isCreating={isCreating}
+      />
+      <div className="appContent">
+        {selectedId != null && <PageLoader key={selectedId} pressReleaseId={selectedId} />}
+      </div>
+    </div>
+  );
+}
+
+function PageLoader({ pressReleaseId }: { pressReleaseId: number }) {
+  const { data, isPending, isError } = usePressReleaseQuery(pressReleaseId);
 
   if (isPending || isError) return null;
 
   return (
     <Page
+      pressReleaseId={pressReleaseId}
       title={data.title}
       content={JSON.parse(data.content)}
       tags={data.tags ?? []}
@@ -38,12 +104,13 @@ export function App() {
 }
 
 type PageProps = {
+  pressReleaseId: number;
   title: string;
   content: string;
   tags: string[];
 };
 
-function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
+function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
   const [tagQuery, setTagQuery] = useState("");
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
@@ -64,8 +131,8 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
   const { messages: validationMessages, showValidation, triggerValidation } =
     useValidation(titleCount, bodyCount);
 
-  const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
-  const { mutate: saveTags } = useSaveTagsMutation(1);
+  const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation(pressReleaseId);
+  const { mutate: saveTags } = useSaveTagsMutation(pressReleaseId);
   const { data: tagItems = [] } = useTagSuggestQuery(tagQuery);
 
   const suggestions = tagItems.map((t) => ({ label: t.name, count: t.count }));
@@ -165,7 +232,7 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
             <EditorContent editor={editor} />
           </div>
 
-          <CommentSidebar editor={editor ?? null} onSave={handleSave} />
+          <CommentSidebar editor={editor ?? null} pressReleaseId={pressReleaseId} onSave={handleSave} />
         </div>
       </main>
 

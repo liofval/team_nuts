@@ -57,6 +57,8 @@ func main() {
 	}))
 
 	// ルート定義
+	r.Get("/api/press-releases", handler.ListPressReleasesHandler)
+	r.Post("/api/press-releases", handler.CreatePressReleaseHandler)
 	r.Get("/api/press-releases/{id}", handler.GetPressReleaseHandler)
 	r.Post("/api/press-releases/{id}", handler.SavePressReleaseHandler)
 

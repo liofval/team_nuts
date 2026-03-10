@@ -240,3 +240,96 @@ func SavePressReleaseHandler(w http.ResponseWriter, r *http.Request) {
 
 	httputil.RespondWithJSON(w, http.StatusOK, pressRelease)
 }
+
+// ListPressReleasesHandler はプレスリリース一覧を取得するハンドラー
+// GET /api/press-releases
+func ListPressReleasesHandler(w http.ResponseWriter, r *http.Request) {
+	pool := db.GetDB()
+	ctx := context.Background()
+
+	rows, err := pool.Query(ctx, `
+		SELECT id, title, created_at, updated_at
+		FROM press_releases
+		ORDER BY updated_at DESC
+	`)
+	if err != nil {
+		log.Printf("ListPressReleasesHandler: query error err=%v", err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
+	defer rows.Close()
+
+	summaries := make([]model.PressReleaseSummary, 0)
+	for rows.Next() {
+		var s model.PressReleaseSummary
+		var createdAt time.Time
+		var updatedAt time.Time
+		if err := rows.Scan(&s.ID, &s.Title, &createdAt, &updatedAt); err != nil {
+			log.Printf("ListPressReleasesHandler: scan error err=%v", err)
+			httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+			return
+		}
+		s.CreatedAt = httputil.FormatTimestamp(createdAt)
+		s.UpdatedAt = httputil.FormatTimestamp(updatedAt)
+		summaries = append(summaries, s)
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("ListPressReleasesHandler: rows error err=%v", err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
+
+	httputil.RespondWithJSON(w, http.StatusOK, summaries)
+}
+
+// CreatePressReleaseHandler はプレスリリースを新規作成するハンドラー
+// POST /api/press-releases
+func CreatePressReleaseHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		httputil.RespondWithError(w, http.StatusBadRequest, "INVALID_REQUEST", "Failed to read request body")
+		return
+	}
+	defer r.Body.Close()
+
+	var req model.CreatePressReleaseRequest
+	if len(body) > 0 {
+		if err := json.Unmarshal(body, &req); err != nil {
+			httputil.RespondWithError(w, http.StatusBadRequest, "INVALID_REQUEST", "Invalid JSON")
+			return
+		}
+	}
+
+	if req.Title == "" {
+		req.Title = "新しいプレスリリース"
+	}
+	if req.Content == "" {
+		req.Content = `{"type":"doc","content":[{"type":"paragraph"}]}`
+	}
+
+	pool := db.GetDB()
+	ctx := context.Background()
+
+	var pr model.PressRelease
+	var createdAt time.Time
+	var updatedAt time.Time
+	err = pool.QueryRow(
+		ctx,
+		`INSERT INTO press_releases (title, content) VALUES ($1, $2)
+		 RETURNING id, title, content, created_at, updated_at`,
+		req.Title,
+		req.Content,
+	).Scan(&pr.ID, &pr.Title, &pr.Content, &createdAt, &updatedAt)
+	if err != nil {
+		log.Printf("CreatePressReleaseHandler: insert error err=%v", err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
+
+	pr.CreatedAt = httputil.FormatTimestamp(createdAt)
+	pr.UpdatedAt = httputil.FormatTimestamp(updatedAt)
+	pr.Tags = []string{}
+
+	httputil.RespondWithJSON(w, http.StatusCreated, pr)
+}

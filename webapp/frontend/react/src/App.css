@@ -1,3 +1,18 @@
+/* ── アプリシェル（ArticleList + コンテンツ） ── */
+.appShell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.appContent {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 /* ── ページレイアウト ── */
 .container {
   display: flex;
