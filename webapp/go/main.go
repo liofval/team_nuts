@@ -3,13 +3,23 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// .env をロード（開発環境用）。見つからなくても処理は継続
+	if err := godotenv.Load(".env"); err != nil {
+		log.Println(".env not loaded, proceeding with environment variables:", err)
+	}
+
+	// 起動時の簡易デバッグ出力（機密情報は出力しない）
+	log.Printf("DB env: DB_HOST=%s DB_NAME=%s", os.Getenv("DB_HOST"), os.Getenv("DB_NAME"))
+
 	// データベース接続の初期化
 	db := GetDB()
 	defer db.Close()
@@ -20,10 +30,10 @@ func main() {
 	r := chi.NewRouter()
 
 	// ミドルウェアの設定
-	r.Use(middleware.Logger)       // ログ出力
-	r.Use(middleware.Recoverer)    // パニックからの復旧
-	r.Use(middleware.RequestID)    // リクエストIDの付与
-	r.Use(middleware.RealIP)       // クライアントの実IPアドレスを取得
+	r.Use(middleware.Logger)    // ログ出力
+	r.Use(middleware.Recoverer) // パニックからの復旧
+	r.Use(middleware.RequestID) // リクエストIDの付与
+	r.Use(middleware.RealIP)    // クライアントの実IPアドレスを取得
 
 	// CORSミドルウェアの設定（開発用）
 	r.Use(cors.Handler(cors.Options{
@@ -38,6 +48,7 @@ func main() {
 	r.Get("/press-releases/{id}", GetPressReleaseHandler)
 	r.Post("/press-releases/{id}", SavePressReleaseHandler)
 	r.Post("/uploads", UploadImageHandler)
+	r.Post("/s3/presign", S3PresignHandler)
 	r.Post("/import-docx", ImportDocxHandler)
 	r.Get("/ogp", ogpHandler)
 

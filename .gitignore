@@ -38,3 +38,5 @@ CLAUDE.md
 *.temp
 
 node_modules/
+
+/webapp/go/press-release-editor

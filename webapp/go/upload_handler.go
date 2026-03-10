@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -37,6 +38,8 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer file.Close()
+
+	log.Printf("UploadImageHandler: received multipart upload field name=%s filename=%s", header.Filename, header.Filename)
 
 	// MIMEタイプを検証
 	buf := make([]byte, 512)
@@ -113,7 +116,9 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	objectPath := fmt.Sprintf("/uploads/%s", filename)
+	log.Printf("UploadImageHandler: saved file to %s", objectPath)
 	respondWithJSON(w, http.StatusOK, map[string]string{
-		"url": fmt.Sprintf("/uploads/%s", filename),
+		"url": objectPath,
 	})
 }
