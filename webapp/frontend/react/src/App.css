@@ -45,9 +45,16 @@
   overflow: auto;
 }
 
-.editorWrapper {
-  max-width: 800px;
+.mainContent {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 1200px;
   margin: 0 auto;
+}
+
+.editorWrapper {
+  flex: 1;
+  min-width: 0;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   overflow: hidden;
@@ -111,4 +118,15 @@
   border-radius: 4px;
   display: block;
   margin: 1em 0;
+}
+
+/* ── コメントハイライト ── */
+.tiptap .comment-highlight {
+  background-color: rgba(255, 212, 0, 0.3);
+  border-bottom: 2px solid #ffc107;
+  cursor: pointer;
+}
+
+.tiptap .comment-highlight:hover {
+  background-color: rgba(255, 212, 0, 0.5);
 }

@@ -47,6 +47,13 @@ func main() {
 	r.Put("/templates/{id}", UpdateTemplateHandler)
 	r.Delete("/templates/{id}", DeleteTemplateHandler)
 
+	// コメントAPI
+	r.Get("/press-releases/{id}/comments", ListCommentsHandler)
+	r.Post("/press-releases/{id}/comments", CreateCommentHandler)
+	r.Put("/press-releases/{id}/comments/{commentId}/resolve", ResolveCommentHandler)
+	r.Put("/press-releases/{id}/comments/{commentId}/unresolve", UnresolveCommentHandler)
+	r.Delete("/press-releases/{id}/comments/{commentId}", DeleteCommentHandler)
+
 	// アップロード済み画像の静的ファイル配信
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(uploadsDir))))
 

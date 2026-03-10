@@ -13,6 +13,7 @@ import ImageToolbar from "./components/ImageToolbar";
 import TemplatePanel from "./components/TemplatePanel";
 import LinkCardToolbar from "./components/LinkCardToolbar";
 import CharacterCount from "./components/CharacterCount";
+import CommentSidebar from "./components/CommentSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import { BODY_MAX, TITLE_MAX } from "./constants";
 import "./App.css";
@@ -113,32 +114,35 @@ function Page({ title: initialTitle, content }: PageProps) {
       )}
 
       <main className="main">
-        <div className="editorWrapper">
-          <div className="titleInputWrapper">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                // 入力を変えたら再保存時に最新の判定を出す（表示自体は維持）
-              }}
-              placeholder="タイトルを入力してください"
-              className="titleInput"
+        <div className="mainContent">
+          <div className="editorWrapper">
+            <div className="titleInputWrapper">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  // 入力を変えたら再保存時に最新の判定を出す（表示自体は維持）
+                }}
+                placeholder="タイトルを入力してください"
+                className="titleInput"
+              />
+            </div>
+
+            <CharacterCount titleCount={titleCount} bodyCount={bodyCount} />
+
+            <EditorToolbar editor={editor ?? null} />
+            <ListLinkToolbar editor={editor ?? null} />
+            <ImageToolbar editor={editor ?? null} onSave={handleSave} />
+            <LinkCardToolbar editor={editor ?? null} />
+            <TemplatePanel
+              editor={editor ?? null}
+              title={title}
+              onApplyTemplate={handleApplyTemplate}
             />
+            <EditorContent editor={editor} />
           </div>
-
-          <CharacterCount titleCount={titleCount} bodyCount={bodyCount} />
-
-          <EditorToolbar editor={editor ?? null} />
-          <ListLinkToolbar editor={editor ?? null} />
-          <ImageToolbar editor={editor ?? null} onSave={handleSave} />
-          <LinkCardToolbar editor={editor ?? null} />
-          <TemplatePanel
-            editor={editor ?? null}
-            title={title}
-            onApplyTemplate={handleApplyTemplate}
-          />
-          <EditorContent editor={editor} />
+          <CommentSidebar editor={editor ?? null} onSave={handleSave} />
         </div>
       </main>
     </div>
