@@ -186,9 +186,11 @@ export default function WritingWorkflow({
     }
 
     const template = TEMPLATES[selectedTemplateIndex];
-    editor.commands.setContent(
-      `<p>${template.content.replace(/\n/g, "<br>")}</p>`,
-    );
+    const html = template.content
+      .split("\n\n")
+      .map((block) => `<p>${block.replace(/\n/g, "<br>")}</p>`)
+      .join("");
+    editor.commands.setContent(html);
   };
 
   const generateTitles = async () => {
