@@ -95,7 +95,6 @@ export default function WritingWorkflow({
   selectedTemplateIndex,
   onSelectTemplate,
 }: Props) {
-  const [isOpen, setIsOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [titleCandidates, setTitleCandidates] = useState<string[]>([]);
@@ -197,26 +196,8 @@ export default function WritingWorkflow({
     0,
   );
 
-  if (!isOpen) {
-    return (
-      <button className="workflowToggleButton" onClick={() => setIsOpen(true)}>
-        執筆ガイド
-      </button>
-    );
-  }
-
   return (
-    <div className="workflowSidebar">
-      <div className="workflowHeader">
-        <h3 className="workflowTitle">執筆ワークフロー</h3>
-        <button
-          className="workflowCloseButton"
-          onClick={() => setIsOpen(false)}
-        >
-          &times;
-        </button>
-      </div>
-
+    <div className="workflowContent">
       {/* Step 1: キーワードを決める */}
       <div
         className={`workflowStep ${completedSteps.has(1) ? "stepCompleted" : ""} ${activeStep === 1 ? "stepActive" : ""}`}

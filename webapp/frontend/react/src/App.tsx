@@ -16,7 +16,7 @@ import LinkCardToolbar from "./components/editor/LinkCardToolbar";
 import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
-import WritingWorkflow from "./components/workflow/WritingWorkflow";
+import LeftSidebar from "./components/workflow/LeftSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import "./App.css";
 
@@ -92,7 +92,7 @@ function Page({ title: initialTitle, content }: PageProps) {
 
       <main className="main">
         <div className="mainContent">
-          <WritingWorkflow
+          <LeftSidebar
             editor={editor ?? null}
             title={title}
             setTitle={setTitle}
