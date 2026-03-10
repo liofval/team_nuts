@@ -6,29 +6,6 @@ import { useReferenceSearch } from "../hooks/useReferenceSearch";
 import { useTagSuggest } from "../hooks/useTagSuggest";
 import "./referenceSearch.css";
 
-const USE_MOCK_ITEMS =
-  (import.meta.env.VITE_USE_MOCK_REFERENCE_ITEMS ?? "false").toString() === "true";
-
-const MOCK_ITEMS: Article[] = [
-  {
-    id: 1,
-    title: "AIを活用した新プロダクト発表",
-    mainImageUrl: null,
-    excerpt: "本文の先頭〜",
-    publishedAt: "2026-02-20T08:00:00Z",
-    tags: ["AI", "IT"],
-    score: 1.87,
-  },
-  {
-    id: 12,
-    title: "IT業界の最新トレンドまとめ",
-    mainImageUrl: null,
-    excerpt: "最近の動向について〜",
-    publishedAt: "2026-01-15T09:30:00Z",
-    tags: ["IT"],
-    score: 1.2,
-  },
-];
 
 type Props = {
   open: boolean;
@@ -50,11 +27,7 @@ export default function ReferenceSearchOverlay({ open, onClose, editor }: Props)
     isError,
   } = useReferenceSearch({ limit: 8 });
 
-  //const items = useMemo(() => data ?? [], [data]);
-  const items = useMemo(() => {
-  if (USE_MOCK_ITEMS) return MOCK_ITEMS;
-  return data ?? [];
-  }, [data]);
+  const items = useMemo(() => data ?? [], [data]);
 
   const [selected, setSelected] = useState<Article | null>(null);
   const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
