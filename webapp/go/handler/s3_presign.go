@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"encoding/json"
@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"press-release-editor/httputil"
 
 	aws "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -30,7 +32,7 @@ type presignResponse struct {
 func S3PresignHandler(w http.ResponseWriter, r *http.Request) {
 	var reqBody presignRequest
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		respondWithError(w, http.StatusBadRequest, "INVALID_REQUEST", "invalid request body")
+		httputil.RespondWithError(w, http.StatusBadRequest, "INVALID_REQUEST", "invalid request body")
 		return
 	}
 
@@ -42,7 +44,7 @@ func S3PresignHandler(w http.ResponseWriter, r *http.Request) {
 	secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	if bucket == "" || region == "" || accessKey == "" || secretKey == "" {
 		log.Printf("S3PresignHandler: missing AWS envs: AWS_S3_BUCKET=%q AWS_REGION=%q AWS_ACCESS_KEY_ID=%q", bucket, region, accessKey)
-		respondWithError(w, http.StatusInternalServerError, "CONFIG_ERROR", "S3 bucket/region or credentials not configured")
+		httputil.RespondWithError(w, http.StatusInternalServerError, "CONFIG_ERROR", "S3 bucket/region or credentials not configured")
 		return
 	}
 
@@ -51,7 +53,7 @@ func S3PresignHandler(w http.ResponseWriter, r *http.Request) {
 	sess, err := session.NewSession(aws.NewConfig().WithRegion(region).WithCredentials(creds))
 	if err != nil {
 		log.Printf("S3PresignHandler: failed to create aws session: %v", err)
-		respondWithError(w, http.StatusInternalServerError, "AWS_CONFIG_ERROR", "failed to create aws session")
+		httputil.RespondWithError(w, http.StatusInternalServerError, "AWS_CONFIG_ERROR", "failed to create aws session")
 		return
 	}
 
@@ -72,14 +74,14 @@ func S3PresignHandler(w http.ResponseWriter, r *http.Request) {
 	urlStr, err := req.Presign(15 * time.Minute)
 	if err != nil {
 		log.Printf("S3PresignHandler: presign error: %v", err)
-		respondWithError(w, http.StatusInternalServerError, "PRESIGN_FAILED", "failed to generate presign url")
+		httputil.RespondWithError(w, http.StatusInternalServerError, "PRESIGN_FAILED", "failed to generate presign url")
 		return
 	}
 
 	objectURL := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key)
 	log.Printf("S3PresignHandler: presign generated key=%s objectUrl=%s", key, objectURL)
 
-	respondWithJSON(w, http.StatusOK, presignResponse{
+	httputil.RespondWithJSON(w, http.StatusOK, presignResponse{
 		URL:       urlStr,
 		Key:       key,
 		ObjectURL: objectURL,

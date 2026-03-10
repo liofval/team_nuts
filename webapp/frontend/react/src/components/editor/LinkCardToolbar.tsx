@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/react";
 import { useState } from "react";
-import { useOgpQuery } from "../hooks/useOgpQuery";
+import { useOgpQuery } from "../../hooks/useOgpQuery";
 import "./LinkCardToolbar.css";
 
 type Props = {

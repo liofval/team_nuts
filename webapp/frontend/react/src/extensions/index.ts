@@ -10,8 +10,9 @@ import Link from "@tiptap/extension-link";
 import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
-import { CommentMark } from "./extensions/commentMark";
-import { LinkCard } from "./components/linkCard";
+import { CommentMark } from "./commentMark";
+import { LinkCard } from "./linkCard";
+import { ImageDropPaste } from "./imageDropPaste";
 
 export const editorExtensions = [
   Document,
@@ -36,4 +37,5 @@ export const editorExtensions = [
   ListItem,
   CommentMark,
   LinkCard, // OGPリンクカード
+  ImageDropPaste, // ドラッグ&ドロップ/ペースト画像アップロード
 ];

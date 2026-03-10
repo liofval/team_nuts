@@ -1,4 +1,4 @@
-package main
+package imgutil
 
 import (
 	"bytes"
@@ -14,9 +14,9 @@ import (
 
 const maxLongSide = 600
 
-// resizeImage は長辺が maxLongSide を超える画像をリサイズする。
+// Resize は長辺が maxLongSide を超える画像をリサイズする。
 // リサイズ不要な場合は nil を返す。
-func resizeImage(r io.Reader, mimeType string) ([]byte, error) {
+func Resize(r io.Reader, mimeType string) ([]byte, error) {
 	img, _, err := image.Decode(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode image: %w", err)

@@ -1,4 +1,4 @@
-package main
+package handler
 
 import (
 	"crypto/tls"
@@ -12,6 +12,7 @@ import (
 	"golang.org/x/net/html"
 )
 
+// OgpData はOGPメタデータのデータ構造
 type OgpData struct {
 	URL         string `json:"url"`
 	Title       string `json:"title"`
@@ -25,7 +26,9 @@ var httpClient = &http.Client{
 	},
 }
 
-func ogpHandler(w http.ResponseWriter, r *http.Request) {
+// OgpHandler はOGPメタデータを取得するハンドラー
+// GET /ogp
+func OgpHandler(w http.ResponseWriter, r *http.Request) {
 	targetURL := r.URL.Query().Get("url")
 	if targetURL == "" {
 		http.Error(w, "url parameter is required", http.StatusBadRequest)

@@ -1,22 +1,22 @@
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import {
   usePressReleaseQuery,
   useSavePressReleaseMutation,
 } from "./hooks/usePressRelease";
 import { useAutoSave } from "./hooks/useAutoSave";
+import { useBodyCount } from "./hooks/useBodyCount";
+import { useValidation } from "./hooks/useValidation";
 import { editorExtensions } from "./extensions";
-import { ImageDropPaste } from "./hooks/useImageDropPaste";
-import EditorToolbar from "./components/EditorToolbar";
-import ListLinkToolbar from "./components/ListLinkToolbar";
-import ImageToolbar from "./components/ImageToolbar";
-import TemplatePanel from "./components/TemplatePanel";
-import LinkCardToolbar from "./components/LinkCardToolbar";
+import EditorToolbar from "./components/editor/EditorToolbar";
+import ListLinkToolbar from "./components/editor/ListLinkToolbar";
+import ImageToolbar from "./components/editor/ImageToolbar";
+import LinkCardToolbar from "./components/editor/LinkCardToolbar";
+import TemplatePanel from "./components/template/TemplatePanel";
 import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
-import CommentSidebar from "./components/CommentSidebar";
+import CommentSidebar from "./components/comment/CommentSidebar";
 import ValidationAlert from "./components/ValidationAlert";
-import { BODY_MAX, TITLE_MAX } from "./constants";
 import "./App.css";
 
 export function App() {
@@ -36,39 +36,14 @@ function Page({ title: initialTitle, content }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
 
   const editor = useEditor({
-    extensions: [...editorExtensions, ImageDropPaste],
+    extensions: editorExtensions,
     content,
   });
 
-  const [bodyCount, setBodyCount] = useState(0);
-
-  useEffect(() => {
-    if (!editor) return;
-
-    const update = () => setBodyCount(editor.getText().length);
-    update();
-    editor.on("update", update);
-
-    return () => {
-      editor.off("update", update);
-    };
-  }, [editor]);
-
+  const bodyCount = useBodyCount(editor);
   const titleCount = title.length;
-
-  const validationMessages = useMemo(() => {
-    const messages: string[] = [];
-    if (titleCount > TITLE_MAX) {
-      messages.push(`タイトルは${TITLE_MAX}文字以内で入力してください。`);
-    }
-    if (bodyCount > BODY_MAX) {
-      messages.push(`本文は${BODY_MAX}文字以内で入力してください。`);
-    }
-    return messages;
-  }, [titleCount, bodyCount]);
-
-  // 保存しようとしたときだけ上部にエラーを出す（常時赤くしない）
-  const [showValidation, setShowValidation] = useState(false);
+  const { messages: validationMessages, showValidation, triggerValidation } =
+    useValidation(titleCount, bodyCount);
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
 
@@ -76,13 +51,7 @@ function Page({ title: initialTitle, content }: PageProps) {
 
   const handleSave = () => {
     if (!editor) return;
-
-    if (validationMessages.length > 0) {
-      setShowValidation(true);
-      return;
-    }
-
-    setShowValidation(false);
+    if (!triggerValidation()) return;
 
     save({
       title,
