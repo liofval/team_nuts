@@ -266,3 +266,68 @@ curl "http://localhost:8080/v1/search?q=AI&tags=ai,it&page=1&per_page=10"
 }
 ```
 
+### GET /api/v1/recommend
+エディタ上でのリアルタイム推薦検索用API。`q`（キーワード）または `tags`（カンマ区切りスラグ）を受け取り、関連記事を配列で返します。
+
+リクエスト例:
+```bash
+curl "http://localhost:8080/api/v1/recommend?q=AI&limit=8"
+curl "http://localhost:8080/api/v1/recommend?tags=it,ai&limit=8"
+```
+
+レスポンス例（配列を直返し）:
+```json
+[
+  {
+    "id": 1,
+    "title": "AIを活用した新プロダクト発表",
+    "mainImageUrl": "/uploads/ghijkl.jpg",
+    "excerpt": "本文の先頭〜",
+    "publishedAt": "2026-02-20T08:00:00Z",
+    "tags": ["AI","IT"],
+    "score": 1.87
+  },
+  {
+    "id": 12,
+    "title": "IT業界の最新トレンドまとめ",
+    "mainImageUrl": null,
+    "excerpt": "最近の動向について〜",
+    "publishedAt": "2026-01-15T09:30:00Z",
+    "tags": ["IT"],
+    "score": 1.2
+  }
+]
+```
+
+### GET /api/v1/press_releases/{id}/similar
+指定記事に類似する記事を返します。まず同じタグを持つ記事を優先して返し、必要に応じて全文検索で補います。
+
+リクエスト例:
+```bash
+curl "http://localhost:8080/api/v1/press_releases/1/similar?limit=8"
+```
+
+レスポンス例（配列を直返し）:
+```json
+[
+  {
+    "id": 5,
+    "title": "AIを活用した新プロダクト発表",
+    "mainImageUrl": "/uploads/ghijkl.jpg",
+    "excerpt": "本文の先頭〜",
+    "publishedAt": "2026-02-20T08:00:00Z",
+    "tags": ["AI"],
+    "score": 3
+  },
+  {
+    "id": 9,
+    "title": "データ分析で顧客獲得を加速",
+    "mainImageUrl": null,
+    "excerpt": "参考となる事例紹介〜",
+    "publishedAt": "2025-12-10T12:00:00Z",
+    "tags": ["DX","AI"],
+    "score": 1.5
+  }
+]
+```
+
