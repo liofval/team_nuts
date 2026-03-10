@@ -19,6 +19,7 @@ import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import TagInput from "./components/TagInput/TagInput";
+import { ReferenceSearchOverlay } from "./components/editor/ReferenceSearchOverlay/ReferenceSearchOverlay";
 import "./App.css";
 
 export function App() {
@@ -44,6 +45,9 @@ type PageProps = {
 function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
   const [tagQuery, setTagQuery] = useState("");
+
+  // 追加：参考記事検索オーバーレイの開閉
+  const [refSearchOpen, setRefSearchOpen] = useState(false);
 
   const editor = useEditor({
     extensions: editorExtensions,
@@ -95,10 +99,21 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
         <h1 className="title">プレスリリースエディター</h1>
         <div className="headerActions">
           <DocxImport editor={editor ?? null} onImport={handleDocxImport} />
+
+          {/* 追加：参考記事検索 */}
+          <button
+            onClick={() => setRefSearchOpen(true)}
+            className="saveButton"
+            type="button"
+          >
+            参考記事を検索
+          </button>
+
           <button
             onClick={handleSave}
             className="saveButton"
             disabled={isSaving}
+            type="button"
           >
             {isSaving ? "保存中..." : "保存"}
           </button>
@@ -145,6 +160,12 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
           <CommentSidebar editor={editor ?? null} onSave={handleSave} />
         </div>
       </main>
+
+      {/* 追加：オーバーレイ本体 */}
+      <ReferenceSearchOverlay
+        open={refSearchOpen}
+        onClose={() => setRefSearchOpen(false)}
+      />
     </div>
   );
 }
