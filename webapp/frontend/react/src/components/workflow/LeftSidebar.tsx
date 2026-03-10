@@ -69,7 +69,7 @@ export default function LeftSidebar({
         </button>
       </div>
 
-      <div className="leftSidebarBody">
+      <div className={`leftSidebarBody ${activeTab === "chat" ? "leftSidebarBodyNoScroll" : ""}`}>
         {activeTab === "workflow" ? (
           <WritingWorkflow
             editor={editor}
