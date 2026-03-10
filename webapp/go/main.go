@@ -73,6 +73,9 @@ func main() {
 	r.Post("/import-docx", handler.ImportDocxHandler)
 	r.Get("/ogp", handler.OgpHandler)
 
+	// タイトル生成API
+	r.Post("/api/generate-title", handler.GenerateTitleHandler)
+
 	// テンプレートAPI
 	r.Get("/templates", handler.ListTemplatesHandler)
 	r.Post("/templates", handler.CreateTemplateHandler)
