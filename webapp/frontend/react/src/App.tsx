@@ -92,7 +92,14 @@ function Page({ title: initialTitle, content }: PageProps) {
 
       <main className="main">
         <div className="mainContent">
-          <WritingWorkflow />
+          <WritingWorkflow
+            editor={editor ?? null}
+            title={title}
+            setTitle={setTitle}
+            onSave={handleSave}
+            selectedTemplateIndex={selectedTemplateIndex}
+            onSelectTemplate={setSelectedTemplateIndex}
+          />
           <div className="editorWrapper">
             <div className="titleInputWrapper">
               <input

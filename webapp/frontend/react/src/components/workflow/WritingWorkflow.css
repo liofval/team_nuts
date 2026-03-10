@@ -57,31 +57,6 @@
   color: #333;
 }
 
-/* ── 全体プログレスバー ── */
-.workflowProgress {
-  margin-bottom: 1rem;
-}
-
-.workflowProgressBar {
-  height: 6px;
-  background-color: #e0e0e0;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 0.35rem;
-}
-
-.workflowProgressFill {
-  height: 100%;
-  background-color: #28a745;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-.workflowProgressText {
-  font-size: 0.75rem;
-  color: #666;
-}
-
 /* ── ステップ共通 ── */
 .workflowStep {
   border: 1px solid #e0e0e0;
@@ -113,6 +88,14 @@
   background-color: #f0f4ff;
 }
 
+.stepCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #28a745;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .stepNumber {
   display: flex;
   align-items: center;
@@ -137,13 +120,6 @@
   color: white;
 }
 
-.stepHeaderText {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-width: 0;
-}
-
 .stepLabel {
   font-size: 0.85rem;
   font-weight: 500;
@@ -152,21 +128,294 @@
 
 .stepCompleted .stepLabel {
   color: #28a745;
-}
-
-.stepSubtitle {
-  font-size: 0.7rem;
-  color: #999;
-}
-
-.stepProgress {
-  font-size: 0.75rem;
-  color: #999;
-  flex-shrink: 0;
+  text-decoration: line-through;
 }
 
 .stepBody {
   padding: 0 0.75rem 0.75rem;
+}
+
+/* ── Step 2: テンプレート選択 ── */
+.templateHint {
+  font-size: 0.8rem;
+  color: #555;
+  margin: 0 0 0.5rem;
+}
+
+.templateList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.templateOption {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.15s;
+}
+
+.templateOption:hover {
+  border-color: #007bff;
+  background-color: #f0f4ff;
+}
+
+.templateOption.templateOptionSelected {
+  border-color: #007bff;
+  background-color: #e8f0fe;
+}
+
+.templateRadio {
+  accent-color: #007bff;
+  flex-shrink: 0;
+}
+
+.applyTemplateButton {
+  width: 100%;
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.applyTemplateButton:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.applyTemplateButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+/* ── Step 3: AIタイトル ── */
+.generateTitleButton {
+  width: 100%;
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  background-color: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 0.6rem;
+}
+
+.generateTitleButton:hover:not(:disabled) {
+  background-color: #5a32a3;
+}
+
+.generateTitleButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.titleCandidates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.titleCandidate {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  transition: all 0.15s;
+}
+
+.titleCandidate:hover {
+  border-color: #6f42c1;
+  background-color: #f8f5ff;
+}
+
+.titleCandidate.candidateSelected {
+  border-color: #6f42c1;
+  background-color: #f0ebff;
+}
+
+.titleCandidateRadio {
+  margin-top: 2px;
+  accent-color: #6f42c1;
+  flex-shrink: 0;
+}
+
+.applyTitleButton {
+  width: 100%;
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  background-color: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.applyTitleButton:hover:not(:disabled) {
+  background-color: #5a32a3;
+}
+
+.applyTitleButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.generatingText {
+  font-size: 0.8rem;
+  color: #6f42c1;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+/* ── Step 4: 確認 ── */
+.reviewSection {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.reviewItem {
+  margin-bottom: 0.6rem;
+}
+
+.reviewLabel {
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.reviewValue {
+  background: #f8f9fa;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.saveWorkflowButton {
+  width: 100%;
+  padding: 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.saveWorkflowButton:hover {
+  background-color: #218838;
+}
+
+/* ── ステップ間のナビ ── */
+.stepNav {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.stepNavButton {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.stepNavButton:hover {
+  background-color: #0056b3;
+}
+
+.stepNavButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+/* ── チェックリスト区切り ── */
+.checklistDivider {
+  display: flex;
+  align-items: center;
+  margin: 1rem 0 0.75rem;
+  gap: 0.5rem;
+}
+
+.checklistDivider::before,
+.checklistDivider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #ccc;
+}
+
+.checklistDividerText {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #555;
+  white-space: nowrap;
+}
+
+/* ── チェックリスト プログレス ── */
+.checklistProgress {
+  margin-bottom: 0.75rem;
+}
+
+.checklistProgressBar {
+  height: 6px;
+  background-color: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+
+.checklistProgressFill {
+  height: 100%;
+  background-color: #28a745;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.checklistProgressText {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+/* ── チェックリスト セクションヘッダー ── */
+.checklistHeaderText {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.checklistSubtitle {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.checklistSectionProgress {
+  font-size: 0.75rem;
+  color: #999;
+  flex-shrink: 0;
 }
 
 /* ── チェックリスト項目 ── */
