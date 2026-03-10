@@ -11,17 +11,19 @@ import { useTagSuggestQuery, useSaveTagsMutation } from "./hooks/useTag";
 import { editorExtensions } from "./extensions";
 import EditorToolbar from "./components/editor/EditorToolbar";
 import ListLinkToolbar from "./components/editor/ListLinkToolbar";
+import TemplateToolbar from "./components/editor/TemplateToolbar";
 import ImageToolbar from "./components/editor/ImageToolbar";
 import LinkCardToolbar from "./components/editor/LinkCardToolbar";
-import TemplatePanel from "./components/template/TemplatePanel";
 import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
+import LeftSidebar from "./components/workflow/LeftSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import TagInput from "./components/TagInput/TagInput";
-import { ReferenceSearchOverlay } from "./components/editor/ReferenceSearchOverlay/ReferenceSearchOverlay";
+import { ReferenceSearchOverlay } from "./features/reference-search"; 
 import "./App.css";
 
+<div style={{ color: "red", fontWeight: 700 }}>DEBUG: BUTTON AREA</div>
 export function App() {
   const { data, isPending, isError } = usePressReleaseQuery();
 
@@ -45,6 +47,9 @@ type PageProps = {
 function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
   const [tagQuery, setTagQuery] = useState("");
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
+    number | null
+  >(null);
 
   // 追加：参考記事検索オーバーレイの開閉
   const [refSearchOpen, setRefSearchOpen] = useState(false);
@@ -53,6 +58,9 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
     extensions: editorExtensions,
     content,
   });
+
+  // 追加: reference search 開閉
+  const [isReferenceOpen, setIsReferenceOpen] = useState(false);
 
   const bodyCount = useBodyCount(editor);
   const titleCount = title.length;
@@ -100,11 +108,11 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
         <div className="headerActions">
           <DocxImport editor={editor ?? null} onImport={handleDocxImport} />
 
-          {/* 追加：参考記事検索 */}
+          {/* 追加: 参考記事検索 */}
           <button
-            onClick={() => setRefSearchOpen(true)}
-            className="saveButton"
             type="button"
+            className="saveButton"
+            onClick={() => setIsReferenceOpen(true)}
           >
             参考記事を検索
           </button>
@@ -126,6 +134,14 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
 
       <main className="main">
         <div className="mainContent">
+          <LeftSidebar
+            editor={editor ?? null}
+            title={title}
+            setTitle={setTitle}
+            onSave={handleSave}
+            selectedTemplateIndex={selectedTemplateIndex}
+            onSelectTemplate={setSelectedTemplateIndex}
+          />
           <div className="editorWrapper">
             <div className="titleInputWrapper">
               <input
@@ -148,23 +164,25 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
 
             <EditorToolbar editor={editor ?? null} />
             <ListLinkToolbar editor={editor ?? null} />
+            <TemplateToolbar
+              editor={editor ?? null}
+              selectedTemplateIndex={selectedTemplateIndex}
+              onSelectTemplate={setSelectedTemplateIndex}
+            />
             <ImageToolbar editor={editor ?? null} onSave={handleSave} />
             <LinkCardToolbar editor={editor ?? null} />
-            <TemplatePanel
-              editor={editor ?? null}
-              title={title}
-              onApplyTemplate={handleApplyTemplate}
-            />
             <EditorContent editor={editor} />
           </div>
+
           <CommentSidebar editor={editor ?? null} onSave={handleSave} />
         </div>
       </main>
 
-      {/* 追加：オーバーレイ本体 */}
+      {/* 追加: Overlay */}
       <ReferenceSearchOverlay
-        open={refSearchOpen}
-        onClose={() => setRefSearchOpen(false)}
+        open={isReferenceOpen}
+        onClose={() => setIsReferenceOpen(false)}
+        editor={editor ?? null}
       />
     </div>
   );
