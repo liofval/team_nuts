@@ -1,4 +1,4 @@
-/* ── アプリシェル（ArticleList + コンテンツ） ── */
+/* ── アプリシェル ── */
 .appShell {
   display: flex;
   height: 100vh;
@@ -62,7 +62,7 @@
 
 .main {
   flex: 1;
-  padding: 2rem;
+  padding-left: 3rem;
   overflow: hidden;
   min-height: 0;
 }

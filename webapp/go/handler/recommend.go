@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,6 +14,87 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/jackc/pgx/v5"
 )
+
+// splitSearchTerms はクエリ文字列を空白（全角スペース含む）で分割して単語リストを返す
+func splitSearchTerms(q string) []string {
+	fields := strings.FieldsFunc(q, func(r rune) bool {
+		return r == ' ' || r == '\t' || r == '\n' || r == '\u3000'
+	})
+	seen := map[string]bool{}
+	var result []string
+	for _, f := range fields {
+		if f != "" && !seen[f] {
+			seen[f] = true
+			result = append(result, f)
+		}
+	}
+	return result
+}
+
+// buildKeywordQuery はキーワード検索用の動的SQLを構築する。
+// スコアリング: タグ名一致=3点 > タイトル一致=2点 > 本文一致=1点（各単語ごとに加算）
+// tagIDs が非空の場合はANDフィルタとして適用する。
+func buildKeywordQuery(terms []string, tagIDs []int64, limit int) (string, []interface{}) {
+	args := make([]interface{}, 0, len(terms)+2)
+
+	tagScoreParts := make([]string, 0, len(terms))
+	titleScoreParts := make([]string, 0, len(terms))
+	contentScoreParts := make([]string, 0, len(terms))
+	whereParts := make([]string, 0, len(terms))
+
+	for i, term := range terms {
+		args = append(args, "%"+term+"%")
+		n := i + 1
+		// タグ名が一致する数に3点
+		tagScoreParts = append(tagScoreParts, fmt.Sprintf(
+			`(SELECT COALESCE(COUNT(*), 0) FROM tags _t JOIN press_release_tags _prt ON _t.id = _prt.tag_id WHERE _prt.press_release_id = pr.id AND _t.name ILIKE $%d)::int`, n))
+		// タイトル一致で2点
+		titleScoreParts = append(titleScoreParts, fmt.Sprintf(
+			`(CASE WHEN pr.title ILIKE $%d THEN 1 ELSE 0 END)`, n))
+		// 本文一致で1点
+		contentScoreParts = append(contentScoreParts, fmt.Sprintf(
+			`(CASE WHEN CAST(pr.content AS TEXT) ILIKE $%d THEN 1 ELSE 0 END)`, n))
+		// いずれかのフィールドでマッチすれば候補
+		whereParts = append(whereParts, fmt.Sprintf(
+			`(pr.title ILIKE $%d OR CAST(pr.content AS TEXT) ILIKE $%d OR EXISTS (SELECT 1 FROM tags _t2 JOIN press_release_tags _prt2 ON _t2.id = _prt2.tag_id WHERE _prt2.press_release_id = pr.id AND _t2.name ILIKE $%d))`,
+			n, n, n))
+	}
+
+	scoreExpr := fmt.Sprintf(
+		`((%s) * 3 + (%s) * 2 + (%s) * 1)::float`,
+		strings.Join(tagScoreParts, " + "),
+		strings.Join(titleScoreParts, " + "),
+		strings.Join(contentScoreParts, " + "),
+	)
+
+	// 選択済みタグがある場合はANDフィルタ追加
+	tagFilterClause := ""
+	if len(tagIDs) > 0 {
+		tagArgIdx := len(terms) + 1
+		args = append(args, tagIDs)
+		tagFilterClause = fmt.Sprintf(
+			` AND EXISTS (SELECT 1 FROM press_release_tags _prt3 WHERE _prt3.press_release_id = pr.id AND _prt3.tag_id = ANY($%d))`,
+			tagArgIdx)
+	}
+
+	limitArgIdx := len(args) + 1
+	args = append(args, limit)
+
+	qSQL := fmt.Sprintf(
+		`SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url,
+			COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt,
+			pr.created_at, %s as score
+		FROM press_releases pr
+		WHERE (%s)%s
+		ORDER BY score DESC, pr.created_at DESC
+		LIMIT $%d`,
+		scoreExpr,
+		strings.Join(whereParts, " OR "),
+		tagFilterClause,
+		limitArgIdx,
+	)
+	return qSQL, args
+}
 
 // GET /api/v1/recommend?q=&tag_ids=&limit=
 func RecommendHandler(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +123,17 @@ func RecommendHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 
 	switch {
+	case q != "":
+		// キーワードあり（タグ選択との併用も含む）
+		// タグ名:3点 / タイトル:2点 / 本文:1点 のスコアリング
+		terms := splitSearchTerms(q)
+		if len(terms) == 0 {
+			terms = []string{q}
+		}
+		qSQL, args := buildKeywordQuery(terms, tagIDs, limit)
+		rows, err = pool.Query(ctx, qSQL, args...)
 	case len(tagIDs) > 0:
+		// 選択タグのみ: マッチするタグ数が多い順で表示
 		rows, err = pool.Query(ctx, `
 			SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, COUNT(DISTINCT prt.tag_id) as tag_match_count
 			FROM press_releases pr
@@ -50,13 +142,6 @@ func RecommendHandler(w http.ResponseWriter, r *http.Request) {
 			GROUP BY pr.id
 			ORDER BY tag_match_count DESC, pr.created_at DESC
 			LIMIT $2`, tagIDs, limit)
-	case q != "":
-		rows, err = pool.Query(ctx, `
-			SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, ts_rank(pr.document_tsv, plainto_tsquery('simple', $1)) as rank
-			FROM press_releases pr
-			WHERE pr.document_tsv @@ plainto_tsquery('simple', $1)
-			ORDER BY rank DESC, pr.created_at DESC
-			LIMIT $2`, q, limit)
 	default:
 		rows, err = pool.Query(ctx, `
 			SELECT id, title, COALESCE(main_image_url, '') as main_image_url, COALESCE(excerpt, substring(content for 200)) as excerpt, created_at, 0 as rank

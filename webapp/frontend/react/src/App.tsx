@@ -22,7 +22,7 @@ import CommentSidebar from "./components/comment/CommentSidebar";
 import LeftSidebar from "./components/workflow/LeftSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import TagInput from "./components/TagInput/TagInput";
-import ArticleList from "./components/ArticleList/ArticleList";
+import type { PressReleaseSummary } from "./hooks/usePressRelease";
 import { ReferenceSearchOverlay } from "./features/reference-search";
 import "./App.css";
 
@@ -74,21 +74,32 @@ export function App() {
 
   return (
     <div className="appShell">
-      <ArticleList
-        articles={articles}
-        selectedId={selectedId}
-        onSelect={handleSelect}
-        onCreateNew={handleCreateNew}
-        isCreating={isCreating}
-      />
       <div className="appContent">
-        {selectedId != null && <PageLoader key={selectedId} pressReleaseId={selectedId} />}
+        {selectedId != null && (
+          <PageLoader
+            key={selectedId}
+            pressReleaseId={selectedId}
+            articles={articles}
+            selectedId={selectedId}
+            onSelectArticle={handleSelect}
+            onCreateNew={handleCreateNew}
+            isCreating={isCreating}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function PageLoader({ pressReleaseId }: { pressReleaseId: number }) {
+type ArticleListProps = {
+  articles: PressReleaseSummary[];
+  selectedId: number | null;
+  onSelectArticle: (id: number) => void;
+  onCreateNew: () => void;
+  isCreating: boolean;
+};
+
+function PageLoader({ pressReleaseId, articles, selectedId, onSelectArticle, onCreateNew, isCreating }: { pressReleaseId: number } & ArticleListProps) {
   const { data, isPending, isError } = usePressReleaseQuery(pressReleaseId);
 
   if (isPending || isError) return null;
@@ -99,6 +110,11 @@ function PageLoader({ pressReleaseId }: { pressReleaseId: number }) {
       title={data.title}
       content={JSON.parse(data.content)}
       tags={data.tags ?? []}
+      articles={articles}
+      selectedId={selectedId}
+      onSelectArticle={onSelectArticle}
+      onCreateNew={onCreateNew}
+      isCreating={isCreating}
     />
   );
 }
@@ -108,9 +124,9 @@ type PageProps = {
   title: string;
   content: string;
   tags: string[];
-};
+} & ArticleListProps;
 
-function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags }: PageProps) {
+function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags, articles, selectedId, onSelectArticle, onCreateNew, isCreating }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
   const [tagQuery, setTagQuery] = useState("");
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
@@ -199,6 +215,11 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags 
             onSave={handleSave}
             selectedTemplateIndex={selectedTemplateIndex}
             onSelectTemplate={setSelectedTemplateIndex}
+            articles={articles}
+            selectedArticleId={selectedId}
+            onSelectArticle={onSelectArticle}
+            onCreateNew={onCreateNew}
+            isCreating={isCreating}
           />
           <div className="editorWrapper">
             <div className="titleInputWrapper">
