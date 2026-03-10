@@ -1,7 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PRESS_RELEASE_QUERY_KEY } from "../constants";
-
-const TAG_BASE_URL = "http://localhost:8080";
+import { BASE_URL, PRESS_RELEASE_QUERY_KEY } from "../constants";
 
 export interface TagItem {
   id: number;
@@ -19,7 +17,7 @@ export function useTagSuggestQuery(q: string) {
     queryFn: async () => {
       const params = new URLSearchParams({ limit: "20" });
       if (q) params.set("q", q);
-      const response = await fetch(`${TAG_BASE_URL}/v1/tags/suggest?${params}`);
+      const response = await fetch(`${BASE_URL}/v1/tags/suggest?${params}`);
       if (!response.ok) {
         throw new Error(`HTTPエラー: ${response.status}`);
       }
@@ -37,7 +35,7 @@ export function useSaveTagsMutation(pressReleaseId: number) {
   return useMutation({
     mutationFn: async (tags: string[]) => {
       const response = await fetch(
-        `${TAG_BASE_URL}/v1/press_release/${pressReleaseId}/tags`,
+        `${BASE_URL}/v1/press_release/${pressReleaseId}/tags`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
