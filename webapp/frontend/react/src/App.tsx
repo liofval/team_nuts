@@ -7,6 +7,7 @@ import {
 import { useAutoSave } from "./hooks/useAutoSave";
 import { useBodyCount } from "./hooks/useBodyCount";
 import { useValidation } from "./hooks/useValidation";
+import { useTagSuggestQuery, useSaveTagsMutation } from "./hooks/useTag";
 import { editorExtensions } from "./extensions";
 import EditorToolbar from "./components/editor/EditorToolbar";
 import ListLinkToolbar from "./components/editor/ListLinkToolbar";
@@ -17,6 +18,7 @@ import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
 import ValidationAlert from "./components/ValidationAlert";
+import TagInput from "./components/TagInput/TagInput";
 import "./App.css";
 
 export function App() {
@@ -24,16 +26,24 @@ export function App() {
 
   if (isPending || isError) return null;
 
-  return <Page title={data.title} content={JSON.parse(data.content)} />;
+  return (
+    <Page
+      title={data.title}
+      content={JSON.parse(data.content)}
+      tags={data.tags ?? []}
+    />
+  );
 }
 
 type PageProps = {
   title: string;
   content: string;
+  tags: string[];
 };
 
-function Page({ title: initialTitle, content }: PageProps) {
+function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
+  const [tagQuery, setTagQuery] = useState("");
 
   const editor = useEditor({
     extensions: editorExtensions,
@@ -46,6 +56,10 @@ function Page({ title: initialTitle, content }: PageProps) {
     useValidation(titleCount, bodyCount);
 
   const { isPending: isSaving, mutate: save } = useSavePressReleaseMutation();
+  const { mutate: saveTags } = useSaveTagsMutation(1);
+  const { data: tagItems = [] } = useTagSuggestQuery(tagQuery);
+
+  const suggestions = tagItems.map((t) => ({ label: t.name, count: t.count }));
 
   useAutoSave(editor ?? null, title, save);
 
@@ -57,6 +71,10 @@ function Page({ title: initialTitle, content }: PageProps) {
       title,
       content: JSON.stringify(editor.getJSON()),
     });
+  };
+
+  const handleTagChange = (newTags: string[]) => {
+    saveTags(newTags);
   };
 
   const handleApplyTemplate = (templateTitle: string, templateContent: string) => {
@@ -87,7 +105,6 @@ function Page({ title: initialTitle, content }: PageProps) {
         </div>
       </header>
 
-      {/* 3-2: 画面上部にエラー表示（保存時のみ） */}
       {showValidation && validationMessages.length > 0 && (
         <ValidationAlert messages={validationMessages} />
       )}
@@ -99,14 +116,18 @@ function Page({ title: initialTitle, content }: PageProps) {
               <input
                 type="text"
                 value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  // 入力を変えたら再保存時に最新の判定を出す（表示自体は維持）
-                }}
+                onChange={(e) => setTitle(e.target.value)}
                 placeholder="タイトルを入力してください"
                 className="titleInput"
               />
             </div>
+
+            <TagInput
+              initialTags={initialTags}
+              suggestions={suggestions}
+              onChange={handleTagChange}
+              onInputChange={setTagQuery}
+            />
 
             <CharacterCount titleCount={titleCount} bodyCount={bodyCount} />
 

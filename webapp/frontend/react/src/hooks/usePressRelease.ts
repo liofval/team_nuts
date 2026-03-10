@@ -18,7 +18,7 @@ export function useSavePressReleaseMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { title: string; content: string }) => {
+    mutationFn: async (data: { title: string; content: string; tags?: string[] }) => {
       const response = await fetch(`${BASE_URL}/press-releases/1`, {
         method: "POST",
         headers: {
