@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"os"
 
+	"press-release-editor/db"
+	"press-release-editor/handler"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -21,8 +24,8 @@ func main() {
 	log.Printf("DB env: DB_HOST=%s DB_NAME=%s", os.Getenv("DB_HOST"), os.Getenv("DB_NAME"))
 
 	// データベース接続の初期化
-	db := GetDB()
-	defer db.Close()
+	pool := db.GetDB()
+	defer pool.Close()
 
 	log.Println("Database connection established")
 
@@ -54,29 +57,29 @@ func main() {
 	}))
 
 	// ルート定義
-	r.Get("/press-releases/{id}", GetPressReleaseHandler)
-	r.Post("/press-releases/{id}", SavePressReleaseHandler)
-	r.Post("/uploads", UploadImageHandler)
-	r.Post("/s3/presign", S3PresignHandler)
-	r.Post("/import-docx", ImportDocxHandler)
-	r.Get("/ogp", ogpHandler)
+	r.Get("/press-releases/{id}", handler.GetPressReleaseHandler)
+	r.Post("/press-releases/{id}", handler.SavePressReleaseHandler)
+	r.Post("/uploads", handler.UploadImageHandler)
+	r.Post("/s3/presign", handler.S3PresignHandler)
+	r.Post("/import-docx", handler.ImportDocxHandler)
+	r.Get("/ogp", handler.OgpHandler)
 
 	// テンプレートAPI
-	r.Get("/templates", ListTemplatesHandler)
-	r.Post("/templates", CreateTemplateHandler)
-	r.Get("/templates/{id}", GetTemplateHandler)
-	r.Put("/templates/{id}", UpdateTemplateHandler)
-	r.Delete("/templates/{id}", DeleteTemplateHandler)
+	r.Get("/templates", handler.ListTemplatesHandler)
+	r.Post("/templates", handler.CreateTemplateHandler)
+	r.Get("/templates/{id}", handler.GetTemplateHandler)
+	r.Put("/templates/{id}", handler.UpdateTemplateHandler)
+	r.Delete("/templates/{id}", handler.DeleteTemplateHandler)
 
 	// コメントAPI
-	r.Get("/press-releases/{id}/comments", ListCommentsHandler)
-	r.Post("/press-releases/{id}/comments", CreateCommentHandler)
-	r.Put("/press-releases/{id}/comments/{commentId}/resolve", ResolveCommentHandler)
-	r.Put("/press-releases/{id}/comments/{commentId}/unresolve", UnresolveCommentHandler)
-	r.Delete("/press-releases/{id}/comments/{commentId}", DeleteCommentHandler)
+	r.Get("/press-releases/{id}/comments", handler.ListCommentsHandler)
+	r.Post("/press-releases/{id}/comments", handler.CreateCommentHandler)
+	r.Put("/press-releases/{id}/comments/{commentId}/resolve", handler.ResolveCommentHandler)
+	r.Put("/press-releases/{id}/comments/{commentId}/unresolve", handler.UnresolveCommentHandler)
+	r.Delete("/press-releases/{id}/comments/{commentId}", handler.DeleteCommentHandler)
 
 	// アップロード済み画像の静的ファイル配信
-	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(uploadsDir))))
+	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(handler.UploadsDir))))
 
 	// サーバー起動
 	port := ":8080"

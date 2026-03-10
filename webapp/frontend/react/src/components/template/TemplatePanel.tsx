@@ -4,7 +4,7 @@ import {
   useTemplatesQuery,
   useCreateTemplateMutation,
   useDeleteTemplateMutation,
-} from "../hooks/useTemplate";
+} from "../../hooks/useTemplate";
 import "./TemplatePanel.css";
 
 type Props = {

@@ -1,7 +1,7 @@
 import type { Editor } from "@tiptap/react";
 import { useRef, useState } from "react";
-import { uploadImageToS3 } from "../hooks/useUploadImageS3";
-import { validateImageFile, ACCEPT_IMAGE_TYPES } from "../hooks/imageValidation";
+import { uploadImageToS3 } from "../../hooks/useUploadImageS3";
+import { validateImageFile, ACCEPT_IMAGE_TYPES } from "../../hooks/imageValidation";
 import "./ImageToolbar.css";
 
 type Props = {
