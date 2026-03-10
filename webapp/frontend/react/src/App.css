@@ -54,7 +54,7 @@
 .mainContent {
   display: flex;
   gap: 1.5rem;
-  max-width: 1500px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
