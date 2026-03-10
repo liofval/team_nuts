@@ -54,6 +54,37 @@ func GetPressReleaseHandler(w http.ResponseWriter, r *http.Request) {
 	pr.CreatedAt = httputil.FormatTimestamp(createdAt)
 	pr.UpdatedAt = httputil.FormatTimestamp(updatedAt)
 
+	// get assigned tags
+	ctx := context.Background()
+	rows, err := pool.Query(ctx, `
+		SELECT t.name
+		FROM tags t
+		JOIN press_release_tags prt ON t.id = prt.tag_id
+		WHERE prt.press_release_id = $1
+		ORDER BY t.name
+	`, id)
+	if err != nil {
+		log.Printf("GetPressReleaseHandler: tag query error id=%d err=%v", id, err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
+	defer rows.Close()
+	var tagNames []string
+	for rows.Next() {
+		var tn string
+		if err := rows.Scan(&tn); err != nil {
+			log.Printf("GetPressReleaseHandler: tag scan error id=%d err=%v", id, err)
+			continue
+		}
+		tagNames = append(tagNames, tn)
+	}
+	if err := rows.Err(); err != nil {
+		log.Printf("GetPressReleaseHandler: tag rows error id=%d err=%v", id, err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
+	pr.Tags = tagNames
+
 	httputil.RespondWithJSON(w, http.StatusOK, pr)
 }
 
@@ -176,6 +207,36 @@ func SavePressReleaseHandler(w http.ResponseWriter, r *http.Request) {
 
 	pressRelease.CreatedAt = httputil.FormatTimestamp(createdAt)
 	pressRelease.UpdatedAt = httputil.FormatTimestamp(updatedAt)
+
+	// get assigned tags for the press release
+	rows2, err := pool.Query(ctx, `
+		SELECT t.name
+		FROM tags t
+		JOIN press_release_tags prt ON t.id = prt.tag_id
+		WHERE prt.press_release_id = $1
+		ORDER BY t.name
+	`, id)
+	if err != nil {
+		log.Printf("SavePressReleaseHandler: tag query error id=%d err=%v", id, err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
+	defer rows2.Close()
+	var tagNames2 []string
+	for rows2.Next() {
+		var tn string
+		if err := rows2.Scan(&tn); err != nil {
+			log.Printf("SavePressReleaseHandler: tag scan error id=%d err=%v", id, err)
+			continue
+		}
+		tagNames2 = append(tagNames2, tn)
+	}
+	if err := rows2.Err(); err != nil {
+		log.Printf("SavePressReleaseHandler: tag rows error id=%d err=%v", id, err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
+		return
+	}
+	pressRelease.Tags = tagNames2
 
 	httputil.RespondWithJSON(w, http.StatusOK, pressRelease)
 }
