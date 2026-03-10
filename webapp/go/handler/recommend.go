@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"net/http"
 	"strconv"
 	"strings"
@@ -42,26 +43,26 @@ func RecommendHandler(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case len(tagIDs) > 0:
 		rows, err = pool.Query(ctx, `
-            SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at
-            FROM press_releases pr
-            JOIN press_release_tags prt ON pr.id = prt.press_release_id
-            WHERE prt.tag_id = ANY($1)
-            GROUP BY pr.id
-            ORDER BY COUNT(DISTINCT prt.tag_id) DESC, pr.created_at DESC
-            LIMIT $2`, tagIDs, limit)
+			SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, COUNT(DISTINCT prt.tag_id) as tag_match_count
+			FROM press_releases pr
+			JOIN press_release_tags prt ON pr.id = prt.press_release_id
+			WHERE prt.tag_id = ANY($1)
+			GROUP BY pr.id
+			ORDER BY tag_match_count DESC, pr.created_at DESC
+			LIMIT $2`, tagIDs, limit)
 	case q != "":
 		rows, err = pool.Query(ctx, `
-            SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at
-            FROM press_releases pr
-            WHERE pr.document_tsv @@ plainto_tsquery('simple', $1)
-            ORDER BY ts_rank(pr.document_tsv, plainto_tsquery('simple', $1)) DESC, pr.created_at DESC
-            LIMIT $2`, q, limit)
+			SELECT pr.id, pr.title, COALESCE(pr.main_image_url, '') as main_image_url, COALESCE(pr.excerpt, substring(pr.content for 200)) as excerpt, pr.created_at, ts_rank(pr.document_tsv, plainto_tsquery('simple', $1)) as rank
+			FROM press_releases pr
+			WHERE pr.document_tsv @@ plainto_tsquery('simple', $1)
+			ORDER BY rank DESC, pr.created_at DESC
+			LIMIT $2`, q, limit)
 	default:
 		rows, err = pool.Query(ctx, `
-            SELECT id, title, COALESCE(main_image_url, '') as main_image_url, COALESCE(excerpt, substring(content for 200)) as excerpt, created_at
-            FROM press_releases
-            ORDER BY created_at DESC
-            LIMIT $1`, limit)
+			SELECT id, title, COALESCE(main_image_url, '') as main_image_url, COALESCE(excerpt, substring(content for 200)) as excerpt, created_at, 0 as rank
+			FROM press_releases
+			ORDER BY created_at DESC
+			LIMIT $1`, limit)
 	}
 
 	if err != nil {
@@ -73,19 +74,34 @@ func RecommendHandler(w http.ResponseWriter, r *http.Request) {
 	items := []map[string]interface{}{}
 	for rows.Next() {
 		var id int
-		var title, img, excerpt string
+		var title string
+		var img sql.NullString
+		var excerpt sql.NullString
 		var publishedAt interface{}
-		if err := rows.Scan(&id, &title, &img, &excerpt, &publishedAt); err != nil {
+		var scoreVal float64
+		if err := rows.Scan(&id, &title, &img, &excerpt, &publishedAt, &scoreVal); err != nil {
 			continue
 		}
 		tags, _ := fetchTagsForPR(ctx, id)
+		var imgVal interface{}
+		if img.Valid && img.String != "" {
+			imgVal = img.String
+		} else {
+			imgVal = nil
+		}
 		items = append(items, map[string]interface{}{
 			"id":           id,
 			"title":        title,
-			"mainImageUrl": img,
-			"excerpt":      excerpt,
-			"publishedAt":  publishedAt,
-			"tags":         tags,
+			"mainImageUrl": imgVal,
+			"excerpt": func() string {
+				if excerpt.Valid {
+					return excerpt.String
+				}
+				return ""
+			}(),
+			"publishedAt": publishedAt,
+			"tags":        tags,
+			"score":       scoreVal,
 		})
 	}
 

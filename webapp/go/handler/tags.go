@@ -168,7 +168,32 @@ func AssignTagsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httputil.RespondWithJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	// return assigned tags for the press release
+	rows2, err := pool.Query(ctx, `
+		SELECT t.id, t.name, t.slug, t.type, COALESCE(cnt.c,0) as count
+		FROM tags t
+		LEFT JOIN (
+		  SELECT tag_id, COUNT(*) as c FROM press_release_tags GROUP BY tag_id
+		) cnt ON t.id = cnt.tag_id
+		WHERE t.id IN (SELECT tag_id FROM press_release_tags WHERE press_release_id = $1)
+		ORDER BY t.name`, id)
+	if err != nil {
+		httputil.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"status": "ok"})
+		return
+	}
+	defer rows2.Close()
+	var assigned []model.Tag
+	for rows2.Next() {
+		var tg model.Tag
+		var cnt int
+		if err := rows2.Scan(&tg.ID, &tg.Name, &tg.Slug, &tg.Type, &cnt); err != nil {
+			continue
+		}
+		tg.Count = cnt
+		assigned = append(assigned, tg)
+	}
+
+	httputil.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"status": "ok", "assigned": assigned})
 }
 
 // PUT /api/v1/press_release/{id}/tags/{tag_id}
@@ -231,7 +256,21 @@ func UpdateTagHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	httputil.RespondWithJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+	// fetch updated tag and return it
+	var tg model.Tag
+	err = pool.QueryRow(ctx, `
+		SELECT t.id, t.name, t.slug, t.type, COALESCE(cnt.c,0) as count, to_char(t.created_at, 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+		FROM tags t
+		LEFT JOIN (
+		  SELECT tag_id, COUNT(*) as c FROM press_release_tags GROUP BY tag_id
+		) cnt ON t.id = cnt.tag_id
+		WHERE t.id = $1`, tagID).Scan(&tg.ID, &tg.Name, &tg.Slug, &tg.Type, &tg.Count, &tg.CreatedAt)
+	if err != nil {
+		httputil.RespondWithJSON(w, http.StatusOK, map[string]string{"status": "ok"})
+		return
+	}
+
+	httputil.RespondWithJSON(w, http.StatusOK, map[string]interface{}{"status": "ok", "tag": tg})
 }
 
 // DELETE /api/v1/press_release/{id}/tags/{tag_id}
