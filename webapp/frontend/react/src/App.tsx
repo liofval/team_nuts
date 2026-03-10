@@ -51,6 +51,9 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
     number | null
   >(null);
 
+  // 追加：参考記事検索オーバーレイの開閉
+  const [refSearchOpen, setRefSearchOpen] = useState(false);
+
   const editor = useEditor({
     extensions: editorExtensions,
     content,
@@ -118,6 +121,7 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
             onClick={handleSave}
             className="saveButton"
             disabled={isSaving}
+            type="button"
           >
             {isSaving ? "保存中..." : "保存"}
           </button>
