@@ -38,6 +38,14 @@ func main() {
 	r.Get("/press-releases/{id}", GetPressReleaseHandler)
 	r.Post("/press-releases/{id}", SavePressReleaseHandler)
 	r.Post("/uploads", UploadImageHandler)
+	r.Get("/ogp", ogpHandler)
+
+	// テンプレートAPI
+	r.Get("/templates", ListTemplatesHandler)
+	r.Post("/templates", CreateTemplateHandler)
+	r.Get("/templates/{id}", GetTemplateHandler)
+	r.Put("/templates/{id}", UpdateTemplateHandler)
+	r.Delete("/templates/{id}", DeleteTemplateHandler)
 
 	// コメントAPI
 	r.Get("/press-releases/{id}/comments", ListCommentsHandler)

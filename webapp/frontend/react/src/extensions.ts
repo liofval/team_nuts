@@ -11,6 +11,7 @@ import BulletList from "@tiptap/extension-bullet-list";
 import OrderedList from "@tiptap/extension-ordered-list";
 import ListItem from "@tiptap/extension-list-item";
 import { CommentMark } from "./extensions/commentMark";
+import { LinkCard } from "./components/linkCard";
 
 export const editorExtensions = [
   Document,
@@ -34,4 +35,5 @@ export const editorExtensions = [
   OrderedList,
   ListItem,
   CommentMark,
+  LinkCard, // OGPリンクカード
 ];
