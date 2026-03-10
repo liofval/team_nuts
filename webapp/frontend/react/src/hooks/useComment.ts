@@ -25,6 +25,9 @@ export function useCommentsQuery() {
       }
       return response.json();
     },
+    // 再フェッチ抑止
+    refetchOnWindowFocus: false,
+    staleTime: 60000,
   });
 }
 

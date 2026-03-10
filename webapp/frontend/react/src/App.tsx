@@ -20,10 +20,9 @@ import CommentSidebar from "./components/comment/CommentSidebar";
 import LeftSidebar from "./components/workflow/LeftSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import TagInput from "./components/TagInput/TagInput";
-import { ReferenceSearchOverlay } from "./features/reference-search"; 
+import { ReferenceSearchOverlay } from "./features/reference-search";
 import "./App.css";
 
-<div style={{ color: "red", fontWeight: 700 }}>DEBUG: BUTTON AREA</div>
 export function App() {
   const { data, isPending, isError } = usePressReleaseQuery();
 
@@ -51,8 +50,6 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
     number | null
   >(null);
 
-  // 追加：参考記事検索オーバーレイの開閉
-  const [refSearchOpen, setRefSearchOpen] = useState(false);
 
   const editor = useEditor({
     extensions: editorExtensions,
@@ -87,12 +84,6 @@ function Page({ title: initialTitle, content, tags: initialTags }: PageProps) {
 
   const handleTagChange = (newTags: string[]) => {
     saveTags(newTags);
-  };
-
-  const handleApplyTemplate = (templateTitle: string, templateContent: string) => {
-    if (!editor) return;
-    setTitle(templateTitle);
-    editor.commands.setContent(JSON.parse(templateContent));
   };
 
   const handleDocxImport = (importedTitle: string, importedContent: string) => {
