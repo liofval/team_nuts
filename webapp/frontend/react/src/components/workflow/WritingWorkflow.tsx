@@ -9,15 +9,15 @@ const CHECKLIST_SECTIONS = [
     subtitle: "Why / Who",
     items: [
       {
-        label: "誰に届けたいか決めた？",
+        label: "誰に届けたいか決めましたか？",
         hint: "例：業界専門誌の記者、地元の主婦層など",
       },
       {
-        label: "「なぜ今なのか」を言える？",
+        label: "「なぜ今なのか」を説明できますか？",
         hint: "季節性、社会情勢、新発売など",
       },
       {
-        label: "キーワードを3つ選んだ？",
+        label: "キーワードを3つ選びましたか？",
         hint: "記事が検索で見つかりやすくなります",
       },
     ],
@@ -27,16 +27,16 @@ const CHECKLIST_SECTIONS = [
     subtitle: "First View",
     items: [
       {
-        label: "タイトルに「最大の強み」を入れた？",
-        hint: "30文字以内で結論を前に",
+        label: "タイトルに「最大の強み」を入れましたか？",
+        hint: "30文字以内で結論を前にお書きください",
       },
       {
-        label: "メイン画像は設定した？",
-        hint: "横向き・高画質のものがベスト",
+        label: "メイン画像は設定しましたか？",
+        hint: "横向き・高画質のものがおすすめです",
       },
       {
-        label: "サブ画像（グラフや利用シーン）はある？",
-        hint: "3枚以上あると記事の説得力がUP",
+        label: "サブ画像（グラフや利用シーン）はありますか？",
+        hint: "3枚以上あると記事の説得力が高まります",
       },
     ],
   },
@@ -45,16 +45,16 @@ const CHECKLIST_SECTIONS = [
     subtitle: "Body",
     items: [
       {
-        label: "リード文で「5W1H」を網羅した？",
-        hint: "最初の3行で全容がわかるように",
+        label: "リード文で「5W1H」を網羅しましたか？",
+        hint: "最初の3行で全容がわかるようにしましょう",
       },
       {
-        label: "「開発の裏側・想い」を書いた？",
-        hint: "中小企業ならではのストーリーは記者が好みます",
+        label: "「開発の裏側・想い」を書きましたか？",
+        hint: "中小企業ならではのストーリーは記者に好まれます",
       },
       {
-        label: "箇条書きを使っている？",
-        hint: "スマホで読んでも疲れない工夫",
+        label: "箇条書きを使っていますか？",
+        hint: "スマホでも読みやすくなる工夫です",
       },
     ],
   },
@@ -63,15 +63,15 @@ const CHECKLIST_SECTIONS = [
     subtitle: "Trust",
     items: [
       {
-        label: "会社概要は最新？",
-        hint: "代表者名や所在地、URLの確認",
+        label: "会社概要は最新ですか？",
+        hint: "代表者名や所在地、URLをご確認ください",
       },
       {
-        label: "メディア専用の問い合わせ先を入れた？",
-        hint: "電話番号と担当者名",
+        label: "メディア専用の問い合わせ先を入れましたか？",
+        hint: "電話番号と担当者名をご記載ください",
       },
       {
-        label: "プレビューでリンク切れを確認した？",
+        label: "プレビューでリンク切れを確認しましたか？",
         hint: "",
       },
     ],
@@ -137,7 +137,7 @@ export default function WritingWorkflow({
 
     if (
       !confirm(
-        "テンプレートを適用すると、現在の本文が上書きされます。よろしいですか？",
+        "テンプレートを適用すると、現在の本文が上書きされます。よろしいでしょうか？",
       )
     ) {
       return;
@@ -230,7 +230,7 @@ export default function WritingWorkflow({
             onClick={(e) => e.stopPropagation()}
           />
           <span className="stepNumber">1</span>
-          <span className="stepLabel">キーワードを決める</span>
+          <span className="stepLabel">キーワードを決めましょう</span>
         </div>
       </div>
 
@@ -247,12 +247,12 @@ export default function WritingWorkflow({
             onClick={(e) => e.stopPropagation()}
           />
           <span className="stepNumber">2</span>
-          <span className="stepLabel">本文を書く</span>
+          <span className="stepLabel">本文を書きましょう</span>
         </div>
         {activeStep === 2 && (
           <div className="stepBody">
             <p className="templateHint">
-              テンプレートを選んで本文に適用できます。
+              テンプレートを選んで本文に適用いただけます。
             </p>
             <div className="templateList">
               {TEMPLATES.map((t, i) => (
@@ -277,7 +277,7 @@ export default function WritingWorkflow({
               disabled={selectedTemplateIndex === null}
               onClick={handleApplyTemplate}
             >
-              テンプレートを適用
+              テンプレートを適用する
             </button>
             <div className="stepNav">
               <button
@@ -307,7 +307,7 @@ export default function WritingWorkflow({
             onClick={(e) => e.stopPropagation()}
           />
           <span className="stepNumber">3</span>
-          <span className="stepLabel">タイトルをAIで生成</span>
+          <span className="stepLabel">タイトルをAIで生成しましょう</span>
         </div>
         {activeStep === 3 && (
           <div className="stepBody">
@@ -316,11 +316,11 @@ export default function WritingWorkflow({
               onClick={generateTitles}
               disabled={isGenerating}
             >
-              {isGenerating ? "生成中..." : "タイトルを生成"}
+              {isGenerating ? "生成中です..." : "タイトルを生成する"}
             </button>
 
             {isGenerating && (
-              <p className="generatingText">AIがタイトルを考えています...</p>
+              <p className="generatingText">AIがタイトルを考えております...</p>
             )}
 
             {titleCandidates.length > 0 && (
@@ -352,7 +352,7 @@ export default function WritingWorkflow({
                     setActiveStep(4);
                   }}
                 >
-                  タイトルを適用して次へ
+                  タイトルを適用して次へ進む
                 </button>
               </>
             )}
@@ -373,7 +373,7 @@ export default function WritingWorkflow({
             onClick={(e) => e.stopPropagation()}
           />
           <span className="stepNumber">4</span>
-          <span className="stepLabel">確認して保存</span>
+          <span className="stepLabel">確認して保存しましょう</span>
         </div>
         {activeStep === 4 && (
           <div className="stepBody">
