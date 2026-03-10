@@ -140,3 +140,129 @@ CREATE TABLE press_releases (
 | `updated_at` | TIMESTAMP | 最終更新日時 |
 
 Docker起動時に `sql/schema.sql` が自動実行され、ID=1の初期データが挿入されます。
+
+---
+
+## タグ関連 / 検索 API (追加)
+
+フロントエンドのタグ補完や検索で利用する API のリクエスト例と期待するモック JSON レスポンスを示します。
+
+### GET /v1/tags/suggest
+タグ候補を取得します。`q` が空の場合は人気順トップを返します。
+
+リクエスト例:
+```bash
+curl "http://localhost:8080/v1/tags/suggest?q=IT&limit=10"
+```
+
+レスポンス例 (q 指定時):
+```json
+{
+  "items": [
+    {"id": 12, "name": "IT", "slug": "it", "type": "tag", "count": 452},
+    {"id": 34, "name": "IT業界", "slug": "it-gyoukai", "type": "tag", "count": 120},
+    {"id": 56, "name": "ITトレンド", "slug": "it-trend", "type": "tag", "count": 78}
+  ]
+}
+```
+
+レスポンス例 (q 空時 - 人気順):
+```json
+{
+  "items": [
+    {"id": 12, "name": "IT", "slug": "it", "type": "tag", "count": 452},
+    {"id": 78, "name": "AI", "slug": "ai", "type": "tag", "count": 398},
+    {"id": 90, "name": "DX", "slug": "dx", "type": "tag", "count": 210}
+  ]
+}
+```
+
+### POST /v1/press_release/{id}/tags
+記事にタグを割り当てます。存在しないタグは `create_missing=true` で作成できます。
+
+リクエスト例:
+```bash
+curl -X POST http://localhost:8080/v1/press_release/1/tags \
+  -H "Content-Type: application/json" \
+  -d '{"tags":["IT","AI"], "create_missing": true}'
+```
+
+レスポンス例:
+```json
+{
+  "status": "ok",
+  "assigned": [
+    {"id": 12, "name": "IT", "slug": "it", "type": "tag", "count": 453},
+    {"id": 78, "name": "AI", "slug": "ai", "type": "tag", "count": 399}
+  ]
+}
+```
+
+### PUT /v1/press_release/{id}/tags/{tag_id}
+タグ自体の編集（管理用）。
+
+リクエスト例:
+```bash
+curl -X PUT http://localhost:8080/v1/press_release/1/tags/12 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"情報技術","slug":"joho-gijutsu","type":"tag"}'
+```
+
+レスポンス例:
+```json
+{
+  "status": "ok",
+  "tag": {"id": 12, "name": "情報技術", "slug": "joho-gijutsu", "type": "tag", "count": 453}
+}
+```
+
+### DELETE /v1/press_release/{id}/tags/{tag_id}
+記事からタグを外します。
+
+リクエスト例:
+```bash
+curl -X DELETE http://localhost:8080/v1/press_release/1/tags/12
+```
+
+レスポンス例:
+```json
+{ "status": "ok" }
+```
+
+### GET /v1/search
+記事の検索を行います。`q`（全文検索）と `tags`（カンマ区切りスラグ）を組み合わせて利用できます。
+
+リクエスト例:
+```bash
+curl "http://localhost:8080/v1/search?q=AI&tags=ai,it&page=1&per_page=10"
+```
+
+レスポンス例:
+```json
+{
+  "total": 123,
+  "page": 1,
+  "per_page": 10,
+  "items": [
+    {
+      "id": 1,
+      "title": "〜新サービスが業界を変える〜",
+      "main_image_url": "/uploads/abcdef.jpg",
+      "excerpt": "プレスリリース本文の抜粋…",
+      "published_at": "2026-03-10T12:34:56Z",
+      "matched_tags": ["IT","AI"],
+      "score": 2.34
+    },
+    {
+      "id": 5,
+      "title": "AIを活用した新プロダクト発表",
+      "main_image_url": "/uploads/ghijkl.jpg",
+      "excerpt": "本文の先頭〜",
+      "published_at": "2026-02-20T08:00:00Z",
+      "matched_tags": ["AI"],
+      "score": 1.87
+    }
+  ]
+}
+```
+
