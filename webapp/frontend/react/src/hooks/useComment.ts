@@ -13,22 +13,25 @@ export type Comment = {
   replies: Comment[];
 };
 
-const COMMENTS_QUERY_KEY = ["comments"];
+const commentsQueryKey = (pressReleaseId: number) => ["comments", pressReleaseId];
 
-export function useCommentsQuery() {
+export function useCommentsQuery(pressReleaseId: number) {
   return useQuery<Comment[]>({
-    queryKey: COMMENTS_QUERY_KEY,
+    queryKey: commentsQueryKey(pressReleaseId),
     queryFn: async () => {
-      const response = await fetch(`${BASE_URL}/press-releases/1/comments`);
+      const response = await fetch(`${BASE_URL}/press-releases/${pressReleaseId}/comments`);
       if (!response.ok) {
         throw new Error(`HTTPエラー: ${response.status}`);
       }
       return response.json();
     },
+    // 再フェッチ抑止
+    refetchOnWindowFocus: false,
+    staleTime: 60000,
   });
 }
 
-export function useCreateCommentMutation() {
+export function useCreateCommentMutation(pressReleaseId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -37,7 +40,7 @@ export function useCreateCommentMutation() {
       body: string;
       parent_id?: number;
     }) => {
-      const response = await fetch(`${BASE_URL}/press-releases/1/comments`, {
+      const response = await fetch(`${BASE_URL}/press-releases/${pressReleaseId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -48,18 +51,18 @@ export function useCreateCommentMutation() {
       return response.json() as Promise<Comment>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: commentsQueryKey(pressReleaseId) });
     },
   });
 }
 
-export function useResolveCommentMutation() {
+export function useResolveCommentMutation(pressReleaseId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (commentId: number) => {
       const response = await fetch(
-        `${BASE_URL}/press-releases/1/comments/${commentId}/resolve`,
+        `${BASE_URL}/press-releases/${pressReleaseId}/comments/${commentId}/resolve`,
         { method: "PUT" },
       );
       if (!response.ok) {
@@ -68,18 +71,18 @@ export function useResolveCommentMutation() {
       return response.json() as Promise<Comment>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: commentsQueryKey(pressReleaseId) });
     },
   });
 }
 
-export function useUnresolveCommentMutation() {
+export function useUnresolveCommentMutation(pressReleaseId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (commentId: number) => {
       const response = await fetch(
-        `${BASE_URL}/press-releases/1/comments/${commentId}/unresolve`,
+        `${BASE_URL}/press-releases/${pressReleaseId}/comments/${commentId}/unresolve`,
         { method: "PUT" },
       );
       if (!response.ok) {
@@ -88,18 +91,18 @@ export function useUnresolveCommentMutation() {
       return response.json() as Promise<Comment>;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: commentsQueryKey(pressReleaseId) });
     },
   });
 }
 
-export function useDeleteCommentMutation() {
+export function useDeleteCommentMutation(pressReleaseId: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (commentId: number) => {
       const response = await fetch(
-        `${BASE_URL}/press-releases/1/comments/${commentId}`,
+        `${BASE_URL}/press-releases/${pressReleaseId}/comments/${commentId}`,
         { method: "DELETE" },
       );
       if (!response.ok) {
@@ -108,7 +111,7 @@ export function useDeleteCommentMutation() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: commentsQueryKey(pressReleaseId) });
     },
   });
 }

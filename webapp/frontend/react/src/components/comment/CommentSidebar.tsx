@@ -12,16 +12,17 @@ import "./CommentSidebar.css";
 
 type Props = {
   editor: Editor | null;
+  pressReleaseId: number;
   onSave: () => void;
 };
 
-export default function CommentSidebar({ editor, onSave }: Props) {
+export default function CommentSidebar({ editor, pressReleaseId, onSave }: Props) {
   const [showResolved, setShowResolved] = useState(false);
-  const { data: comments, isPending } = useCommentsQuery();
-  const { mutate: createComment } = useCreateCommentMutation();
-  const { mutate: resolveComment } = useResolveCommentMutation();
-  const { mutate: unresolveComment } = useUnresolveCommentMutation();
-  const { mutate: deleteComment } = useDeleteCommentMutation();
+  const { data: comments, isPending } = useCommentsQuery(pressReleaseId);
+  const { mutate: createComment } = useCreateCommentMutation(pressReleaseId);
+  const { mutate: resolveComment } = useResolveCommentMutation(pressReleaseId);
+  const { mutate: unresolveComment } = useUnresolveCommentMutation(pressReleaseId);
+  const { mutate: deleteComment } = useDeleteCommentMutation(pressReleaseId);
 
   if (!editor) return null;
 

@@ -3,7 +3,9 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -34,17 +36,37 @@ type GenerateTitleResponse struct {
 // GenerateTitleHandler はOpenAI APIを使ってプレスリリースのタイトル案を5件生成する
 // POST /api/generate-title
 func GenerateTitleHandler(w http.ResponseWriter, r *http.Request) {
+	const maxRequestBodyBytes = 1 << 20 // 1MB
+	limitedBody := http.MaxBytesReader(w, r.Body, maxRequestBodyBytes)
+
 	var req GenerateTitleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(limitedBody).Decode(&req); err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			httputil.RespondWithError(w, http.StatusRequestEntityTooLarge, "BODY_TOO_LARGE", "Request body too large")
+			return
+		}
 		httputil.RespondWithError(w, http.StatusBadRequest, "INVALID_REQUEST", "Invalid request body")
 		return
 	}
 
-	tagsStr := strings.Join(req.Tags, ", ")
-	if tagsStr == "" {
-		tagsStr = "なし"
+	if strings.TrimSpace(req.Body) == "" {
+		httputil.RespondWithError(w, http.StatusBadRequest, "MISSING_REQUIRED_FIELDS", "body is required")
+		return
+	}
+	if strings.TrimSpace(req.TargetAudience) == "" {
+		httputil.RespondWithError(w, http.StatusBadRequest, "MISSING_REQUIRED_FIELDS", "target_audience is required")
+		return
 	}
 
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		log.Printf("GenerateTitleHandler: OPENAI_API_KEY is not set")
+		httputil.RespondWithError(w, http.StatusInternalServerError, "LLM_ERROR", "OpenAI API key is not configured")
+		return
+	}
+
+	tagsStr := strings.Join(req.Tags, ", ")
 	prompt := fmt.Sprintf(`# Role
 あなたはPR TIMESで数多くのバズを生み出してきた、敏腕PRコンサルタントです。
 中小企業の限られたリソースの中から、社会性やストーリー性を見出し、記者が思わずクリックしたくなる「ニュース価値」のあるタイトルを提案してください。
@@ -74,7 +96,6 @@ typeは必ず次の5種類のうちいずれかを使用してください：「
 
 {"titles":[{"title":"タイトル文","type":"王道・ニュース型","description":"狙いの説明"},{"title":"タイトル文","type":"課題解決型","description":"狙いの説明"},{"title":"タイトル文","type":"ストーリー型","description":"狙いの説明"},{"title":"タイトル文","type":"トレンド型","description":"狙いの説明"},{"title":"タイトル文","type":"インパクト型","description":"狙いの説明"}]}`, req.Body, tagsStr, req.TargetAudience)
 
-	apiKey := os.Getenv("OPENAI_API_KEY")
 	client := openai.NewClient(option.WithAPIKey(apiKey))
 
 	resp, err := client.Responses.New(context.Background(), responses.ResponseNewParams{
@@ -82,6 +103,7 @@ typeは必ず次の5種類のうちいずれかを使用してください：「
 		Input: responses.ResponseNewParamsInputUnion{OfString: openai.String(prompt)},
 	})
 	if err != nil {
+		log.Printf("GenerateTitleHandler: OpenAI API error: %v", err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "LLM_ERROR", "Failed to call OpenAI API")
 		return
 	}
@@ -101,6 +123,7 @@ typeは必ず次の5種類のうちいずれかを使用してください：「
 
 	var result GenerateTitleResponse
 	if err := json.Unmarshal([]byte(outputText), &result); err != nil {
+		log.Printf("GenerateTitleHandler: failed to parse LLM response: %v\noutput: %s", err, outputText)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "PARSE_ERROR", "Failed to parse LLM response")
 		return
 	}
