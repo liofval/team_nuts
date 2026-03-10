@@ -1,0 +1,18 @@
+.docxImportButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.docxImportButton:hover:not(:disabled) {
+  background-color: #218838;
+}
+
+.docxImportButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}

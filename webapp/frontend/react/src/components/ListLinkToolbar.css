@@ -1,42 +1,40 @@
 /* ── リスト・リンクツールバー ── */
-.toolbar {
+.listLinkToolbar {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
-  background-color: #f8f9fa;
+  padding: 6px 1.5rem;
 }
 
-.toolbarButton {
+.listLinkToolbar__btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: 0.85rem;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 0.82rem;
   font-weight: 500;
   color: #495057;
-  background: white;
+  background: transparent;
   border: 1px solid #dee2e6;
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   white-space: nowrap;
 }
 
-.toolbarButton:hover {
+.listLinkToolbar__btn:hover {
   background: #e9ecef;
   border-color: #adb5bd;
   color: #212529;
 }
 
-.toolbarButton--active {
+.listLinkToolbar__btn--active {
   background: #007bff;
   border-color: #007bff;
   color: white;
 }
 
-.toolbarButton--active:hover {
+.listLinkToolbar__btn--active:hover {
   background: #0056b3;
   border-color: #0056b3;
 }

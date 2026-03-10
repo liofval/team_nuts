@@ -1,55 +1,46 @@
-.toolbar {
+/* ── 書式ツールバー (B / I / U) ── */
+.editorToolbar {
   display: flex;
-  gap: 0.25rem;
+  gap: 6px;
   align-items: center;
+  padding: 6px 1.5rem;
 }
 
-.toolbarButton {
+.editorToolbar__btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  font-size: 0.95rem;
-  background-color: transparent;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057;
+  background: transparent;
   border: 1px solid #dee2e6;
   border-radius: 4px;
   cursor: pointer;
-  color: #333;
-  transition: background-color 0.15s, border-color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
-.toolbarButton:hover {
-  background-color: #e9ecef;
+.editorToolbar__btn:hover {
+  background: #e9ecef;
   border-color: #adb5bd;
+  color: #212529;
 }
 
-.toolbarButton.active {
-  background-color: #007bff;
+.editorToolbar__btn--active {
+  background: #007bff;
   color: white;
   border-color: #007bff;
 }
 
-.toolbarButton.italic em {
-  font-style: italic;
+.editorToolbar__btn--active:hover {
+  background: #0056b3;
+  border-color: #0056b3;
 }
 
-.toolbarButton.underline span {
-  text-decoration: underline;
-}
-
-/* Ensure variant + active selectors get the same visual treatment */
-.toolbarButton.bold.active,
-.toolbarButton.italic.active,
-.toolbarButton.underline.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-/* Ensure inner elements inherit button color when active */
-.toolbarButton > strong,
-.toolbarButton > em,
-.toolbarButton > span {
+.editorToolbar__btn > strong,
+.editorToolbar__btn > em,
+.editorToolbar__btn > span {
   color: inherit;
 }

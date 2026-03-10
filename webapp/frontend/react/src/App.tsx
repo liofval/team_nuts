@@ -12,7 +12,9 @@ import ListLinkToolbar from "./components/ListLinkToolbar";
 import ImageToolbar from "./components/ImageToolbar";
 import TemplatePanel from "./components/TemplatePanel";
 import LinkCardToolbar from "./components/LinkCardToolbar";
+import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
+import CommentSidebar from "./components/CommentSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import { BODY_MAX, TITLE_MAX } from "./constants";
 import "./App.css";
@@ -94,17 +96,26 @@ function Page({ title: initialTitle, content }: PageProps) {
     editor.commands.setContent(JSON.parse(templateContent));
   };
 
+  const handleDocxImport = (importedTitle: string, importedContent: string) => {
+    if (!editor) return;
+    setTitle(importedTitle);
+    editor.commands.setContent(JSON.parse(importedContent));
+  };
+
   return (
     <div className="container">
       <header className="header">
         <h1 className="title">プレスリリースエディター</h1>
-        <button
-          onClick={handleSave}
-          className="saveButton"
-          disabled={isSaving}
-        >
-          {isSaving ? "保存中..." : "保存"}
-        </button>
+        <div className="headerActions">
+          <DocxImport editor={editor ?? null} onImport={handleDocxImport} />
+          <button
+            onClick={handleSave}
+            className="saveButton"
+            disabled={isSaving}
+          >
+            {isSaving ? "保存中..." : "保存"}
+          </button>
+        </div>
       </header>
 
       {/* 3-2: 画面上部にエラー表示（保存時のみ） */}
@@ -113,32 +124,35 @@ function Page({ title: initialTitle, content }: PageProps) {
       )}
 
       <main className="main">
-        <div className="editorWrapper">
-          <div className="titleInputWrapper">
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                // 入力を変えたら再保存時に最新の判定を出す（表示自体は維持）
-              }}
-              placeholder="タイトルを入力してください"
-              className="titleInput"
+        <div className="mainContent">
+          <div className="editorWrapper">
+            <div className="titleInputWrapper">
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  // 入力を変えたら再保存時に最新の判定を出す（表示自体は維持）
+                }}
+                placeholder="タイトルを入力してください"
+                className="titleInput"
+              />
+            </div>
+
+            <CharacterCount titleCount={titleCount} bodyCount={bodyCount} />
+
+            <EditorToolbar editor={editor ?? null} />
+            <ListLinkToolbar editor={editor ?? null} />
+            <ImageToolbar editor={editor ?? null} onSave={handleSave} />
+            <LinkCardToolbar editor={editor ?? null} />
+            <TemplatePanel
+              editor={editor ?? null}
+              title={title}
+              onApplyTemplate={handleApplyTemplate}
             />
+            <EditorContent editor={editor} />
           </div>
-
-          <CharacterCount titleCount={titleCount} bodyCount={bodyCount} />
-
-          <EditorToolbar editor={editor ?? null} />
-          <ListLinkToolbar editor={editor ?? null} />
-          <ImageToolbar editor={editor ?? null} onSave={handleSave} />
-          <LinkCardToolbar editor={editor ?? null} />
-          <TemplatePanel
-            editor={editor ?? null}
-            title={title}
-            onApplyTemplate={handleApplyTemplate}
-          />
-          <EditorContent editor={editor} />
+          <CommentSidebar editor={editor ?? null} onSave={handleSave} />
         </div>
       </main>
     </div>

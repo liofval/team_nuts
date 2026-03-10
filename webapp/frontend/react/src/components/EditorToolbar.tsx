@@ -9,11 +9,11 @@ export default function EditorToolbar({ editor }: Props) {
   if (!editor) return null;
 
   return (
-    <div className="toolbar">
+    <div className="editorToolbar">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`toolbarButton bold${editor.isActive("bold") ? " active" : ""}`}
+        className={`editorToolbar__btn${editor.isActive("bold") ? " editorToolbar__btn--active" : ""}`}
         title="太字 (Ctrl+B)"
       >
         <strong>B</strong>
@@ -21,7 +21,7 @@ export default function EditorToolbar({ editor }: Props) {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`toolbarButton italic${editor.isActive("italic") ? " active" : ""}`}
+        className={`editorToolbar__btn${editor.isActive("italic") ? " editorToolbar__btn--active" : ""}`}
         title="斜体 (Ctrl+I)"
       >
         <em>I</em>
@@ -29,7 +29,7 @@ export default function EditorToolbar({ editor }: Props) {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`toolbarButton underline${editor.isActive("underline") ? " active" : ""}`}
+        className={`editorToolbar__btn${editor.isActive("underline") ? " editorToolbar__btn--active" : ""}`}
         title="下線 (Ctrl+U)"
       >
         <span style={{ textDecoration: "underline" }}>U</span>
