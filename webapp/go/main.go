@@ -59,10 +59,22 @@ func main() {
 	// ルート定義
 	r.Get("/press-releases/{id}", handler.GetPressReleaseHandler)
 	r.Post("/press-releases/{id}", handler.SavePressReleaseHandler)
+
+	// Tags & Search API
+	r.Get("/api/v1/tags/suggest", handler.SuggestTagsHandler)
+	r.Post("/api/v1/press_release/{id}/tags", handler.AssignTagsHandler)
+	r.Put("/api/v1/press_release/{id}/tags/{tag_id}", handler.UpdateTagHandler)
+	r.Delete("/api/v1/press_release/{id}/tags/{tag_id}", handler.DeleteTagAssignmentHandler)
+	r.Get("/api/v1/search", handler.SearchHandler)
+	r.Get("/api/v1/recommend", handler.RecommendHandler)
+	r.Get("/api/v1/press_releases/{id}/similar", handler.SimilarPressReleasesHandler)
 	r.Post("/uploads", handler.UploadImageHandler)
 	r.Post("/s3/presign", handler.S3PresignHandler)
 	r.Post("/import-docx", handler.ImportDocxHandler)
 	r.Get("/ogp", handler.OgpHandler)
+
+	// タイトル生成API
+	r.Post("/api/generate-title", handler.GenerateTitleHandler)
 
 	// テンプレートAPI
 	r.Get("/templates", handler.ListTemplatesHandler)
