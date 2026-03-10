@@ -57,8 +57,8 @@ func main() {
 	}))
 
 	// ルート定義
-	r.Get("/press-releases/{id}", handler.GetPressReleaseHandler)
-	r.Post("/press-releases/{id}", handler.SavePressReleaseHandler)
+	r.Get("/api/press-releases/{id}", handler.GetPressReleaseHandler)
+	r.Post("/api/press-releases/{id}", handler.SavePressReleaseHandler)
 
 	// Tags & Search API
 	r.Get("/api/v1/tags/suggest", handler.SuggestTagsHandler)
@@ -68,27 +68,27 @@ func main() {
 	r.Get("/api/v1/search", handler.SearchHandler)
 	r.Get("/api/v1/recommend", handler.RecommendHandler)
 	r.Get("/api/v1/press_releases/{id}/similar", handler.SimilarPressReleasesHandler)
-	r.Post("/uploads", handler.UploadImageHandler)
-	r.Post("/s3/presign", handler.S3PresignHandler)
-	r.Post("/import-docx", handler.ImportDocxHandler)
-	r.Get("/ogp", handler.OgpHandler)
+	r.Post("/api/uploads", handler.UploadImageHandler)
+	r.Post("/api/s3/presign", handler.S3PresignHandler)
+	r.Post("/api/import-docx", handler.ImportDocxHandler)
+	r.Get("/api/ogp", handler.OgpHandler)
 
 	// タイトル生成API
 	r.Post("/api/generate-title", handler.GenerateTitleHandler)
 
 	// テンプレートAPI
-	r.Get("/templates", handler.ListTemplatesHandler)
-	r.Post("/templates", handler.CreateTemplateHandler)
-	r.Get("/templates/{id}", handler.GetTemplateHandler)
-	r.Put("/templates/{id}", handler.UpdateTemplateHandler)
-	r.Delete("/templates/{id}", handler.DeleteTemplateHandler)
+	r.Get("/api/templates", handler.ListTemplatesHandler)
+	r.Post("/api/templates", handler.CreateTemplateHandler)
+	r.Get("/api/templates/{id}", handler.GetTemplateHandler)
+	r.Put("/api/templates/{id}", handler.UpdateTemplateHandler)
+	r.Delete("/api/templates/{id}", handler.DeleteTemplateHandler)
 
 	// コメントAPI
-	r.Get("/press-releases/{id}/comments", handler.ListCommentsHandler)
-	r.Post("/press-releases/{id}/comments", handler.CreateCommentHandler)
-	r.Put("/press-releases/{id}/comments/{commentId}/resolve", handler.ResolveCommentHandler)
-	r.Put("/press-releases/{id}/comments/{commentId}/unresolve", handler.UnresolveCommentHandler)
-	r.Delete("/press-releases/{id}/comments/{commentId}", handler.DeleteCommentHandler)
+	r.Get("/api/press-releases/{id}/comments", handler.ListCommentsHandler)
+	r.Post("/api/press-releases/{id}/comments", handler.CreateCommentHandler)
+	r.Put("/api/press-releases/{id}/comments/{commentId}/resolve", handler.ResolveCommentHandler)
+	r.Put("/api/press-releases/{id}/comments/{commentId}/unresolve", handler.UnresolveCommentHandler)
+	r.Delete("/api/press-releases/{id}/comments/{commentId}", handler.DeleteCommentHandler)
 
 	// アップロード済み画像の静的ファイル配信
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(handler.UploadsDir))))
