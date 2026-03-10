@@ -10,12 +10,13 @@ import { useValidation } from "./hooks/useValidation";
 import { editorExtensions } from "./extensions";
 import EditorToolbar from "./components/editor/EditorToolbar";
 import ListLinkToolbar from "./components/editor/ListLinkToolbar";
+import TemplateToolbar from "./components/editor/TemplateToolbar";
 import ImageToolbar from "./components/editor/ImageToolbar";
 import LinkCardToolbar from "./components/editor/LinkCardToolbar";
-import TemplatePanel from "./components/template/TemplatePanel";
 import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
+import LeftSidebar from "./components/workflow/LeftSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import { ReferenceSearchOverlay } from "./features/reference-search"; 
 import "./App.css";
@@ -36,6 +37,9 @@ type PageProps = {
 
 function Page({ title: initialTitle, content }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
+  const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
+    number | null
+  >(null);
 
   const editor = useEditor({
     extensions: editorExtensions,
@@ -62,12 +66,6 @@ function Page({ title: initialTitle, content }: PageProps) {
       title,
       content: JSON.stringify(editor.getJSON()),
     });
-  };
-
-  const handleApplyTemplate = (templateTitle: string, templateContent: string) => {
-    if (!editor) return;
-    setTitle(templateTitle);
-    editor.commands.setContent(JSON.parse(templateContent));
   };
 
   const handleDocxImport = (importedTitle: string, importedContent: string) => {
@@ -108,6 +106,14 @@ function Page({ title: initialTitle, content }: PageProps) {
 
       <main className="main">
         <div className="mainContent">
+          <LeftSidebar
+            editor={editor ?? null}
+            title={title}
+            setTitle={setTitle}
+            onSave={handleSave}
+            selectedTemplateIndex={selectedTemplateIndex}
+            onSelectTemplate={setSelectedTemplateIndex}
+          />
           <div className="editorWrapper">
             <div className="titleInputWrapper">
               <input
@@ -123,13 +129,13 @@ function Page({ title: initialTitle, content }: PageProps) {
 
             <EditorToolbar editor={editor ?? null} />
             <ListLinkToolbar editor={editor ?? null} />
+            <TemplateToolbar
+              editor={editor ?? null}
+              selectedTemplateIndex={selectedTemplateIndex}
+              onSelectTemplate={setSelectedTemplateIndex}
+            />
             <ImageToolbar editor={editor ?? null} onSave={handleSave} />
             <LinkCardToolbar editor={editor ?? null} />
-            <TemplatePanel
-              editor={editor ?? null}
-              title={title}
-              onApplyTemplate={handleApplyTemplate}
-            />
             <EditorContent editor={editor} />
           </div>
 
