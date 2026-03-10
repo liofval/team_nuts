@@ -33,11 +33,11 @@ export default function ListLinkToolbar({ editor }: Props) {
   };
 
   return (
-    <div className="toolbar">
+    <div className="listLinkToolbar">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`toolbarButton${editor.isActive("bulletList") ? " toolbarButton--active" : ""}`}
+        className={`listLinkToolbar__btn${editor.isActive("bulletList") ? " listLinkToolbar__btn--active" : ""}`}
         title="箇条書き (Ctrl+Shift+8)"
       >
         <BulletListIcon />
@@ -47,14 +47,14 @@ export default function ListLinkToolbar({ editor }: Props) {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`toolbarButton${editor.isActive("orderedList") ? " toolbarButton--active" : ""}`}
+        className={`listLinkToolbar__btn${editor.isActive("orderedList") ? " listLinkToolbar__btn--active" : ""}`}
         title="番号付きリスト (Ctrl+Shift+7)"
       >
         <OrderedListIcon />
         番号付き
       </button>
 
-      <button type="button" onClick={setLink}>
+      <button type="button" onClick={setLink} className="listLinkToolbar__btn">
         リンク追加/編集
       </button>
     </div>
