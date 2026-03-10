@@ -22,6 +22,14 @@
   letter-spacing: 0.1em;
 }
 
+.leftSidebarToggleArticles {
+  background-color: #28a745;
+}
+
+.leftSidebarToggleArticles:hover {
+  background-color: #1e7e34;
+}
+
 .leftSidebarToggleWorkflow {
   background-color: #007bff;
 }
@@ -114,4 +122,82 @@
 .leftSidebarBodyNoScroll {
   overflow: hidden;
   padding: 0;
+}
+
+/* ── 記事一覧パネル ── */
+.articlePanel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.articlePanelHeader {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+  background: white;
+}
+
+.articlePanelCreateBtn {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.articlePanelCreateBtn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.articlePanelCreateBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.articlePanelList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.articlePanelItem {
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #ebebeb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: background-color 0.1s;
+}
+
+.articlePanelItem:hover {
+  background-color: #f0f4ff;
+}
+
+.articlePanelItemActive {
+  background-color: #e8f4fd;
+  border-left: 3px solid #007bff;
+}
+
+.articlePanelItemTitle {
+  font-size: 0.82rem;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.articlePanelItemDate {
+  font-size: 0.72rem;
+  color: #888;
 }
