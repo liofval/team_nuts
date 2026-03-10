@@ -1,0 +1,359 @@
+/* ── ワークフローサイドバー ── */
+.workflowToggleButton {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  padding: 0.75rem 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  z-index: 100;
+  letter-spacing: 0.1em;
+}
+
+.workflowToggleButton:hover {
+  background-color: #0056b3;
+}
+
+.workflowSidebar {
+  width: 280px;
+  border-right: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  overflow-y: auto;
+  padding: 1rem;
+  flex-shrink: 0;
+}
+
+.workflowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.workflowTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.workflowCloseButton {
+  padding: 0.2rem 0.5rem;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  line-height: 1;
+}
+
+.workflowCloseButton:hover {
+  color: #333;
+}
+
+/* ── ステップ共通 ── */
+.workflowStep {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  background: white;
+  overflow: hidden;
+}
+
+.workflowStep.stepCompleted {
+  border-color: #28a745;
+}
+
+.workflowStep.stepActive {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+.stepHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.stepHeader:hover {
+  background-color: #f0f4ff;
+}
+
+.stepCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #28a745;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.stepNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #666;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.stepActive .stepNumber {
+  background-color: #007bff;
+  color: white;
+}
+
+.stepCompleted .stepNumber {
+  background-color: #28a745;
+  color: white;
+}
+
+.stepLabel {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.stepCompleted .stepLabel {
+  color: #28a745;
+  text-decoration: line-through;
+}
+
+.stepBody {
+  padding: 0 0.75rem 0.75rem;
+}
+
+/* ── Step 1: キーワード選択 ── */
+.keywordChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.keywordChip {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  border: 1.5px solid #007bff;
+  border-radius: 20px;
+  background: white;
+  color: #007bff;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.keywordChip:hover {
+  background-color: #e8f0fe;
+}
+
+.keywordChip.chipSelected {
+  background-color: #007bff;
+  color: white;
+}
+
+/* ── Step 2: 本文 ── */
+.templateSuggestion {
+  font-size: 0.8rem;
+  color: #555;
+  background: #f0f4ff;
+  padding: 0.6rem;
+  border-radius: 6px;
+  margin-bottom: 0.6rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.applyTemplateButton {
+  width: 100%;
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.applyTemplateButton:hover {
+  background-color: #0056b3;
+}
+
+/* ── Step 3: AIタイトル ── */
+.generateTitleButton {
+  width: 100%;
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  background-color: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 0.6rem;
+}
+
+.generateTitleButton:hover:not(:disabled) {
+  background-color: #5a32a3;
+}
+
+.generateTitleButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.titleCandidates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.titleCandidate {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  transition: all 0.15s;
+}
+
+.titleCandidate:hover {
+  border-color: #6f42c1;
+  background-color: #f8f5ff;
+}
+
+.titleCandidate.candidateSelected {
+  border-color: #6f42c1;
+  background-color: #f0ebff;
+}
+
+.titleCandidateRadio {
+  margin-top: 2px;
+  accent-color: #6f42c1;
+  flex-shrink: 0;
+}
+
+.applyTitleButton {
+  width: 100%;
+  padding: 0.45rem;
+  font-size: 0.8rem;
+  background-color: #6f42c1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.applyTitleButton:hover:not(:disabled) {
+  background-color: #5a32a3;
+}
+
+.applyTitleButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}
+
+.generatingText {
+  font-size: 0.8rem;
+  color: #6f42c1;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+/* ── Step 4: 確認 ── */
+.reviewSection {
+  font-size: 0.8rem;
+  color: #555;
+}
+
+.reviewItem {
+  margin-bottom: 0.6rem;
+}
+
+.reviewLabel {
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.reviewValue {
+  background: #f8f9fa;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+.reviewKeywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.reviewKeywordTag {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+  background-color: #007bff;
+  color: white;
+  border-radius: 12px;
+}
+
+.saveWorkflowButton {
+  width: 100%;
+  padding: 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.saveWorkflowButton:hover {
+  background-color: #218838;
+}
+
+/* ── ステップ間のナビ ── */
+.stepNav {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.stepNavButton {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.stepNavButton:hover {
+  background-color: #0056b3;
+}
+
+.stepNavButton:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+}

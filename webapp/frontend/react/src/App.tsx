@@ -16,6 +16,7 @@ import TemplatePanel from "./components/template/TemplatePanel";
 import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
+import WritingWorkflow from "./components/workflow/WritingWorkflow";
 import ValidationAlert from "./components/ValidationAlert";
 import "./App.css";
 
@@ -94,6 +95,12 @@ function Page({ title: initialTitle, content }: PageProps) {
 
       <main className="main">
         <div className="mainContent">
+          <WritingWorkflow
+            editor={editor ?? null}
+            title={title}
+            setTitle={setTitle}
+            onSave={handleSave}
+          />
           <div className="editorWrapper">
             <div className="titleInputWrapper">
               <input
