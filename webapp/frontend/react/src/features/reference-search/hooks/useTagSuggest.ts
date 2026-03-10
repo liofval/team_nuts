@@ -31,7 +31,8 @@ export function useTagSuggest(input: string, options?: { limit?: number; enabled
     queryFn: async (): Promise<Tag[]> => {
       const res = await fetch(url);
       if (!res.ok) throw new Error(`tag suggest failed: ${res.status}`);
-      return (await res.json()) as Tag[];
+      const data = (await res.json()) as { items: Tag[] };
+      return Array.isArray(data.items) ? data.items : [];
     },
     enabled: enabled && debounced.trim().length > 0,
     staleTime: 30_000,
