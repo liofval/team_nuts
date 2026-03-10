@@ -92,6 +92,7 @@ func main() {
 
 	// アップロード済み画像の静的ファイル配信
 	r.Handle("/uploads/*", http.StripPrefix("/uploads/", http.FileServer(http.Dir(handler.UploadsDir))))
+	r.Handle("/api/uploads/*", http.StripPrefix("/api/uploads/", http.FileServer(http.Dir(handler.UploadsDir))))
 
 	// サーバー起動
 	port := ":8080"
