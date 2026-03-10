@@ -66,6 +66,8 @@ func main() {
 	r.Put("/api/v1/press_release/{id}/tags/{tag_id}", handler.UpdateTagHandler)
 	r.Delete("/api/v1/press_release/{id}/tags/{tag_id}", handler.DeleteTagAssignmentHandler)
 	r.Get("/api/v1/search", handler.SearchHandler)
+	r.Get("/api/v1/recommend", handler.RecommendHandler)
+	r.Get("/api/v1/press_releases/{id}/similar", handler.SimilarPressReleasesHandler)
 	r.Post("/uploads", handler.UploadImageHandler)
 	r.Post("/s3/presign", handler.S3PresignHandler)
 	r.Post("/import-docx", handler.ImportDocxHandler)
