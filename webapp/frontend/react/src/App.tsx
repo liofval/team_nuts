@@ -16,6 +16,7 @@ import ListLinkToolbar from "./components/editor/ListLinkToolbar";
 import TemplateToolbar from "./components/editor/TemplateToolbar";
 import ImageToolbar from "./components/editor/ImageToolbar";
 import LinkCardToolbar from "./components/editor/LinkCardToolbar";
+import RecruitButton from "./components/editor/RecruitButton";
 import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
@@ -250,6 +251,7 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
             <ImageToolbar editor={editor ?? null} onSave={handleSave} />
             <LinkCardToolbar editor={editor ?? null} />
             <EditorContent editor={editor} />
+            <RecruitButton editor={editor ?? null} />
           </div>
 
           <CommentSidebar editor={editor ?? null} pressReleaseId={pressReleaseId} onSave={handleSave} />

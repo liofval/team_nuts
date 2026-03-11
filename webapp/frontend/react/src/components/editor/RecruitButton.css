@@ -1,0 +1,142 @@
+/* ── リクルートボタン ── */
+.recruitSection {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.recruitSection__insert {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.recruitSection__insert:hover {
+  background-color: #218838;
+}
+
+.recruitSection__edit {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: none;
+  border: 1px solid #6c757d;
+  border-radius: 4px;
+  color: #6c757d;
+  cursor: pointer;
+}
+
+.recruitSection__edit:hover {
+  background-color: #f8f9fa;
+  color: #495057;
+}
+
+.recruitSection__create {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.recruitSection__create:hover {
+  background-color: #0056b3;
+}
+
+.recruitSection__create:disabled,
+.recruitSection__insert:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* ── モーダル ── */
+.recruitModal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.recruitModal {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 600px;
+  max-width: 90vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.recruitModal__title {
+  margin: 0 0 1rem;
+  font-size: 1.125rem;
+}
+
+.recruitModal__textarea {
+  flex: 1;
+  min-height: 300px;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-family: inherit;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.recruitModal__textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.recruitModal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.recruitModal__cancel {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.recruitModal__cancel:hover {
+  background-color: #f8f9fa;
+}
+
+.recruitModal__save {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.recruitModal__save:hover {
+  background-color: #0056b3;
+}
+
+.recruitModal__save:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
