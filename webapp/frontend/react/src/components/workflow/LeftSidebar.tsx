@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import WritingWorkflow from "./WritingWorkflow";
 import ChatBot from "../chat/ChatBot";
 import { SNSPostPanel } from "../../features/sns-post";
@@ -39,15 +39,49 @@ export default function LeftSidebar({
   pressReleaseId,
   bodyText,
 }: Props) {
+  const MIN_WIDTH = 200;
+  const MAX_WIDTH = 600;
+  const DEFAULT_WIDTH = 280;
+
   const [isOpen, setIsOpen] = useState(false);
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [activeTab, setActiveTab] = useState<ActiveTab>("workflow");
   const tabsRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
 
   const scrollToTab = useCallback((el: HTMLButtonElement | null) => {
     if (el && tabsRef.current) {
       el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
     }
   }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging.current) return;
+    const newWidth = e.clientX;
+    setWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newWidth)));
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    isDragging.current = false;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
 
   const switchTab = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -78,7 +112,8 @@ export default function LeftSidebar({
   }
 
   return (
-    <div className="leftSidebar">
+    <div className="leftSidebar" style={{ width }}>
+      <div className="leftSidebarResizeHandle" onMouseDown={handleDragStart} />
       <div className="leftSidebarHeader">
         <div className="leftSidebarTabs" ref={tabsRef}>
           <button
