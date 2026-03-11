@@ -1,0 +1,112 @@
+/* ── SNS投稿モーダル ── */
+.snsModal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.snsModal {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 900px;
+  max-width: 95vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+  overflow-y: auto;
+}
+
+.snsModal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.snsModal__title {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.snsModal__close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0 0.25rem;
+  line-height: 1;
+}
+
+.snsModal__close:hover {
+  color: #333;
+}
+
+.snsModal__generate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.snsModal__generateBtn {
+  padding: 0.6rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.snsModal__generateBtn:hover {
+  opacity: 0.9;
+}
+
+.snsModal__generateBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.snsModal__hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.snsModal__error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #dc3545;
+}
+
+.snsModal__previews {
+  display: flex;
+  gap: 1rem;
+}
+
+@media (max-width: 700px) {
+  .snsModal__previews {
+    flex-direction: column;
+  }
+}
+
+.snsModal__empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #6c757d;
+}
+
+.snsModal__empty p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}

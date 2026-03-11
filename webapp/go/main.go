@@ -88,6 +88,12 @@ func main() {
 	r.Put("/api/templates/{id}", handler.UpdateTemplateHandler)
 	r.Delete("/api/templates/{id}", handler.DeleteTemplateHandler)
 
+	// SNS投稿API
+	r.Post("/api/press-releases/{id}/sns/generate", handler.GenerateSNSPostHandler)
+	r.Get("/api/press-releases/{id}/sns", handler.ListSNSPostsHandler)
+	r.Put("/api/sns-posts/{postId}", handler.UpdateSNSPostHandler)
+	r.Post("/api/sns-posts/{postId}/publish", handler.PublishSNSPostHandler)
+
 	// コメントAPI
 	r.Get("/api/press-releases/{id}/comments", handler.ListCommentsHandler)
 	r.Post("/api/press-releases/{id}/comments", handler.CreateCommentHandler)
