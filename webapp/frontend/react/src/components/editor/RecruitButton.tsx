@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import type { Editor } from "@tiptap/react";
 import {
   useTemplatesQuery,
@@ -108,7 +109,7 @@ export default function RecruitButton({ editor }: Props) {
         )}
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div
           className="recruitModal__overlay"
           onClick={(e) => {
@@ -140,7 +141,8 @@ export default function RecruitButton({ editor }: Props) {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   );

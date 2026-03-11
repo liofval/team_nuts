@@ -250,8 +250,8 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
             />
             <ImageToolbar editor={editor ?? null} onSave={handleSave} />
             <LinkCardToolbar editor={editor ?? null} />
-            <EditorContent editor={editor} />
             <RecruitButton editor={editor ?? null} />
+            <EditorContent editor={editor} />
           </div>
 
           <CommentSidebar editor={editor ?? null} pressReleaseId={pressReleaseId} onSave={handleSave} />
