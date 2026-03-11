@@ -17,6 +17,7 @@ type Props = {
 };
 
 export default function CommentSidebar({ editor, pressReleaseId, onSave }: Props) {
+  const [isOpen, setIsOpen] = useState(true);
   const [showResolved, setShowResolved] = useState(false);
   const { data: comments, isPending } = useCommentsQuery(pressReleaseId);
   const { mutate: createComment } = useCreateCommentMutation(pressReleaseId);
@@ -48,14 +49,38 @@ export default function CommentSidebar({ editor, pressReleaseId, onSave }: Props
 
   const activeComments = comments?.filter((c) => !c.resolved) ?? [];
   const resolvedComments = comments?.filter((c) => c.resolved) ?? [];
+  const totalCount = (comments?.length ?? 0);
+
+  if (!isOpen) {
+    return (
+      <button
+        className="commentSidebarToggle"
+        onClick={() => setIsOpen(true)}
+      >
+        <span className="commentSidebarToggle__label">コメント</span>
+        {totalCount > 0 && (
+          <span className="commentSidebarToggle__badge">{totalCount}</span>
+        )}
+      </button>
+    );
+  }
 
   return (
     <div className="commentSidebar">
       <div className="commentSidebarHeader">
         <h3 className="commentSidebarTitle">コメント</h3>
-        <button onClick={handleAddComment} className="addCommentButton">
-          + コメント追加
-        </button>
+        <div className="commentSidebarHeaderActions">
+          <button onClick={handleAddComment} className="addCommentButton">
+            + コメント追加
+          </button>
+          <button
+            className="commentSidebarCollapseBtn"
+            onClick={() => setIsOpen(false)}
+            title="コメントを閉じる"
+          >
+            &rsaquo;
+          </button>
+        </div>
       </div>
 
       {isPending ? (
