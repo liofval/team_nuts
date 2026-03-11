@@ -243,14 +243,16 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
 
             <EditorToolbar editor={editor ?? null} />
             <ListLinkToolbar editor={editor ?? null} />
-            <TemplateToolbar
-              editor={editor ?? null}
-              selectedTemplateIndex={selectedTemplateIndex}
-              onSelectTemplate={setSelectedTemplateIndex}
-            />
+            <div className="templateRow">
+              <TemplateToolbar
+                editor={editor ?? null}
+                selectedTemplateIndex={selectedTemplateIndex}
+                onSelectTemplate={setSelectedTemplateIndex}
+              />
+              <RecruitButton editor={editor ?? null} />
+            </div>
             <ImageToolbar editor={editor ?? null} onSave={handleSave} />
             <LinkCardToolbar editor={editor ?? null} />
-            <RecruitButton editor={editor ?? null} />
             <EditorContent editor={editor} />
           </div>
 
