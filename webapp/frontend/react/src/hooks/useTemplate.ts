@@ -49,6 +49,30 @@ export function useCreateTemplateMutation() {
   });
 }
 
+export function useUpdateTemplateMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: number; name: string; title: string; content: string }) => {
+      const response = await fetch(`${BASE_URL}/templates/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error("テンプレートの更新に失敗しました");
+      }
+      return response.json() as Promise<Template>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TEMPLATES_QUERY_KEY });
+    },
+    onError: (error) => {
+      alert(`エラー: ${error.message}`);
+    },
+  });
+}
+
 export function useDeleteTemplateMutation() {
   const queryClient = useQueryClient();
 

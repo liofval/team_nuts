@@ -2,6 +2,10 @@ import type { Editor } from "@tiptap/react";
 import { useState } from "react";
 import { BASE_URL } from "../../constants";
 import { TEMPLATES, applyTemplate } from "../../templates";
+import {
+  useTemplatesQuery,
+  useCreateTemplateMutation,
+} from "../../hooks/useTemplate";
 import "./WritingWorkflow.css";
 
 type TitleCandidate = {
@@ -130,6 +134,10 @@ export default function WritingWorkflow({
   selectedTemplateIndex,
   onSelectTemplate,
 }: Props) {
+  const { data: templates } = useTemplatesQuery();
+  const createRecruitMutation = useCreateTemplateMutation();
+  const recruitTemplate = templates?.find((t) => t.name === "recruit");
+
   const [activeStep, setActiveStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [titleCandidates, setTitleCandidates] = useState<TitleCandidate[]>([]);
@@ -164,6 +172,24 @@ export default function WritingWorkflow({
         next.add(key);
       }
       return next;
+    });
+  };
+
+  const handleInsertRecruit = () => {
+    if (!editor || !recruitTemplate) return;
+    const html = recruitTemplate.content
+      .split("\n\n")
+      .map((block) => `<p>${block.replace(/\n/g, "<br>")}</p>`)
+      .join("");
+    editor.commands.focus("end");
+    editor.commands.insertContent(html);
+  };
+
+  const handleCreateRecruit = () => {
+    createRecruitMutation.mutate({
+      name: "recruit",
+      title: "リクルート",
+      content: "■ 採用情報\n私たちは一緒に働く仲間を募集しています。\n\n■ 募集職種\n・[職種1]\n・[職種2]\n\n■ 応募方法\n採用ページよりご応募ください。\nURL：[採用ページURL]\n\n■ お問い合わせ\n[会社名] 採用担当\nEmail：[メールアドレス]",
     });
   };
 
@@ -294,6 +320,29 @@ export default function WritingWorkflow({
             >
               テンプレートを適用する
             </button>
+            <div className="recruitWorkflowSection">
+              <p className="templateHint">
+                リクルート情報を末尾に追加できます。
+              </p>
+              {recruitTemplate ? (
+                <button
+                  className="applyTemplateButton recruitInsertButton"
+                  onClick={handleInsertRecruit}
+                >
+                  リクルート情報を挿入
+                </button>
+              ) : (
+                <button
+                  className="applyTemplateButton"
+                  onClick={handleCreateRecruit}
+                  disabled={createRecruitMutation.isPending}
+                >
+                  {createRecruitMutation.isPending
+                    ? "作成中..."
+                    : "リクルートテンプレートを作成"}
+                </button>
+              )}
+            </div>
             <div className="stepNav">
               <button
                 className="stepNavButton"

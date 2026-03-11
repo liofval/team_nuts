@@ -143,6 +143,21 @@
   cursor: not-allowed;
 }
 
+/* ── Step 2: リクルート挿入 ── */
+.recruitWorkflowSection {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #e0e0e0;
+}
+
+.recruitInsertButton {
+  background-color: #28a745;
+}
+
+.recruitInsertButton:hover:not(:disabled) {
+  background-color: #218838;
+}
+
 /* ── Step 3: AIタイトル ── */
 .generateTitleButton {
   width: 100%;

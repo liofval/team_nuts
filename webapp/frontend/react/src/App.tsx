@@ -16,6 +16,8 @@ import ListLinkToolbar from "./components/editor/ListLinkToolbar";
 import TemplateToolbar from "./components/editor/TemplateToolbar";
 import ImageToolbar from "./components/editor/ImageToolbar";
 import LinkCardToolbar from "./components/editor/LinkCardToolbar";
+import RecruitButton from "./components/editor/RecruitButton";
+import RecruitEditButton from "./components/editor/RecruitEditButton";
 import DocxImport from "./components/DocxImport";
 import CharacterCount from "./components/CharacterCount";
 import CommentSidebar from "./components/comment/CommentSidebar";
@@ -202,6 +204,7 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
           <h1 className="title">プレスリリースエディター</h1>
         </div>
         <div className="headerActions">
+          <RecruitEditButton className="saveButton" label="リクルート編集" />
           <DocxImport editor={editor ?? null} onImport={handleDocxImport} />
 
           {/* 追加: 参考記事検索 */}
@@ -271,6 +274,7 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
                 selectedTemplateIndex={selectedTemplateIndex}
                 onSelectTemplate={setSelectedTemplateIndex}
               />
+              <RecruitButton editor={editor ?? null} />
             </div>
             <ImageToolbar editor={editor ?? null} onSave={handleSave} />
             <LinkCardToolbar editor={editor ?? null} />
