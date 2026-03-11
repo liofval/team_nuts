@@ -30,10 +30,31 @@
   background-color: #f8f9fa;
 }
 
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backButton {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333;
+}
+
+.backButton:hover {
+  background-color: #e9ecef;
+}
+
 .title {
   margin: 0;
   font-size: 1.5rem;
 }
+
 
 .headerActions {
   display: flex;

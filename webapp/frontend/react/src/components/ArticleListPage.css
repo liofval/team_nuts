@@ -1,0 +1,99 @@
+.articleListPage {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.articleListPage .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.articleListPage .headerTitle {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.articleListPageBody {
+  flex: 1;
+  overflow: auto;
+  padding: 2rem;
+  background-color: #f5f6f8;
+}
+
+.articleListPageInner {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.articleListPageActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.articleListPageCreateButton {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.articleListPageCreateButton:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.articleListPageCreateButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.articleListPageGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.articleListPageCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.articleListPageCard:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.articleListPageCardTitle {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #222;
+}
+
+.articleListPageCardDate {
+  font-size: 0.8rem;
+  color: #888;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.articleListPageEmpty {
+  text-align: center;
+  color: #888;
+  padding: 3rem 0;
+  font-size: 0.95rem;
+}
