@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import WritingWorkflow from "./WritingWorkflow";
 import ChatBot from "../chat/ChatBot";
 import { SNSPostPanel } from "../../features/sns-post";
@@ -41,6 +41,17 @@ export default function LeftSidebar({
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>("workflow");
+  const tabsRef = useRef<HTMLDivElement>(null);
+
+  const scrollToTab = useCallback((el: HTMLButtonElement | null) => {
+    if (el && tabsRef.current) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+    }
+  }, []);
+
+  const switchTab = (tab: ActiveTab) => {
+    setActiveTab(tab);
+  };
 
   const openTab = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -69,28 +80,32 @@ export default function LeftSidebar({
   return (
     <div className="leftSidebar">
       <div className="leftSidebarHeader">
-        <div className="leftSidebarTabs">
+        <div className="leftSidebarTabs" ref={tabsRef}>
           <button
+            ref={activeTab === "articles" ? scrollToTab : undefined}
             className={`leftSidebarTab ${activeTab === "articles" ? "leftSidebarTabActive" : ""}`}
-            onClick={() => setActiveTab("articles")}
+            onClick={() => switchTab("articles")}
           >
             記事一覧
           </button>
           <button
+            ref={activeTab === "workflow" ? scrollToTab : undefined}
             className={`leftSidebarTab ${activeTab === "workflow" ? "leftSidebarTabActive" : ""}`}
-            onClick={() => setActiveTab("workflow")}
+            onClick={() => switchTab("workflow")}
           >
             執筆ガイド
           </button>
           <button
+            ref={activeTab === "chat" ? scrollToTab : undefined}
             className={`leftSidebarTab ${activeTab === "chat" ? "leftSidebarTabActive" : ""}`}
-            onClick={() => setActiveTab("chat")}
+            onClick={() => switchTab("chat")}
           >
             AIチャット
           </button>
           <button
+            ref={activeTab === "sns" ? scrollToTab : undefined}
             className={`leftSidebarTab ${activeTab === "sns" ? "leftSidebarTabActive" : ""}`}
-            onClick={() => setActiveTab("sns")}
+            onClick={() => switchTab("sns")}
           >
             SNS投稿
           </button>
