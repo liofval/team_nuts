@@ -22,6 +22,7 @@ import CommentSidebar from "./components/comment/CommentSidebar";
 import LeftSidebar from "./components/workflow/LeftSidebar";
 import ValidationAlert from "./components/ValidationAlert";
 import TagInput from "./components/TagInput/TagInput";
+import ArticleListPage from "./components/ArticleListPage";
 import type { PressReleaseSummary } from "./hooks/usePressRelease";
 import { ReferenceSearchOverlay } from "./features/reference-search";
 import "./App.css";
@@ -34,9 +35,13 @@ function getIdFromUrl(): number | null {
   return isNaN(n) || n <= 0 ? null : n;
 }
 
-function setIdInUrl(id: number) {
+function setIdInUrl(id: number | null) {
   const url = new URL(window.location.href);
-  url.searchParams.set("id", String(id));
+  if (id != null) {
+    url.searchParams.set("id", String(id));
+  } else {
+    url.searchParams.delete("id");
+  }
   window.history.replaceState(null, "", url.toString());
 }
 
@@ -46,21 +51,24 @@ export function App() {
 
   const [selectedId, setSelectedId] = useState<number | null>(getIdFromUrl);
 
-  // 一覧が取得できたら初期IDを決定
+  // URLのIDが記事一覧に存在しない場合はリセット
   useEffect(() => {
     if (listPending || articles.length === 0) return;
     const urlId = getIdFromUrl();
-    const valid = urlId && articles.some((a) => a.id === urlId);
-    if (!valid) {
-      const first = articles[0].id;
-      setSelectedId(first);
-      setIdInUrl(first);
+    if (urlId && !articles.some((a) => a.id === urlId)) {
+      setSelectedId(null);
+      setIdInUrl(null);
     }
   }, [listPending, articles]);
 
   const handleSelect = (id: number) => {
     setSelectedId(id);
     setIdInUrl(id);
+  };
+
+  const handleBackToList = () => {
+    setSelectedId(null);
+    setIdInUrl(null);
   };
 
   const handleCreateNew = () => {
@@ -75,13 +83,21 @@ export function App() {
   return (
     <div className="appShell">
       <div className="appContent">
-        {selectedId != null && (
+        {selectedId != null ? (
           <PageLoader
             key={selectedId}
             pressReleaseId={selectedId}
             articles={articles}
             selectedId={selectedId}
             onSelectArticle={handleSelect}
+            onBackToList={handleBackToList}
+            onCreateNew={handleCreateNew}
+            isCreating={isCreating}
+          />
+        ) : (
+          <ArticleListPage
+            articles={articles}
+            onSelect={handleSelect}
             onCreateNew={handleCreateNew}
             isCreating={isCreating}
           />
@@ -95,11 +111,12 @@ type ArticleListProps = {
   articles: PressReleaseSummary[];
   selectedId: number | null;
   onSelectArticle: (id: number) => void;
+  onBackToList: () => void;
   onCreateNew: () => void;
   isCreating: boolean;
 };
 
-function PageLoader({ pressReleaseId, articles, selectedId, onSelectArticle, onCreateNew, isCreating }: { pressReleaseId: number } & ArticleListProps) {
+function PageLoader({ pressReleaseId, articles, selectedId, onSelectArticle, onBackToList, onCreateNew, isCreating }: { pressReleaseId: number } & ArticleListProps) {
   const { data, isPending, isError } = usePressReleaseQuery(pressReleaseId);
 
   if (isPending || isError) return null;
@@ -113,6 +130,7 @@ function PageLoader({ pressReleaseId, articles, selectedId, onSelectArticle, onC
       articles={articles}
       selectedId={selectedId}
       onSelectArticle={onSelectArticle}
+      onBackToList={onBackToList}
       onCreateNew={onCreateNew}
       isCreating={isCreating}
     />
@@ -126,7 +144,7 @@ type PageProps = {
   tags: string[];
 } & ArticleListProps;
 
-function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags, articles, selectedId, onSelectArticle, onCreateNew, isCreating }: PageProps) {
+function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags, articles, selectedId, onSelectArticle, onBackToList, onCreateNew, isCreating }: PageProps) {
   const [title, setTitle] = useState(() => initialTitle);
   const [tagQuery, setTagQuery] = useState("");
   const [selectedTemplateIndex, setSelectedTemplateIndex] = useState<
@@ -177,7 +195,12 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
   return (
     <div className="container">
       <header className="header">
-        <h1 className="title">プレスリリースエディター</h1>
+        <div className="headerLeft">
+          <button type="button" className="backButton" onClick={onBackToList}>
+            ← 記事一覧
+          </button>
+          <h1 className="title">プレスリリースエディター</h1>
+        </div>
         <div className="headerActions">
           <DocxImport editor={editor ?? null} onImport={handleDocxImport} />
 
