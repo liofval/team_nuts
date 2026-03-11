@@ -36,6 +36,7 @@
   box-sizing: border-box;
   margin-left: auto;
   margin-right: auto;
+  padding-top: 1rem;
 }
 
 /* ── ラベル ────────────────────────────────────────────────────── */
@@ -54,8 +55,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
-  min-height: 48px;
-  padding: 8px 12px;
+  min-height: 32px;
+  padding: 6px 12px;
   background: var(--field-bg);
   border: 1.5px solid var(--field-border);
   border-radius: var(--radius-field);

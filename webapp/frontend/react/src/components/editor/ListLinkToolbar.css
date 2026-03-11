@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 1.5rem;
+  padding: 0;
 }
 
 .listLinkToolbar__btn {

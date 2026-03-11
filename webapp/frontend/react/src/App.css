@@ -30,15 +30,48 @@
   background-color: #f8f9fa;
 }
 
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.backButton {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #333;
+}
+
+.backButton:hover {
+  background-color: #e9ecef;
+}
+
 .title {
   margin: 0;
   font-size: 1.5rem;
 }
 
+
 .headerActions {
   display: flex;
   gap: 0.5rem;
   align-items: center;
+}
+
+.saveButton--unsaved {
+  background-color: #e67e22;
+}
+
+.saveButton--unsaved:hover:not(:disabled) {
+  background-color: #cf6d17;
+}
+
+.saveButton--saved {
+  background-color: #6c757d;
 }
 
 .saveButton {
@@ -105,10 +138,18 @@
   box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
-/* ── テンプレート行 ── */
-.templateRow {
+/* ── ツールバー横並びラッパー ── */
+.toolbarRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 6px;
+  padding: 4px 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.toolbarRow > * {
+  margin: 0;
 }
 
 /* ── Tiptapエディター ── */
