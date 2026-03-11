@@ -8,30 +8,20 @@ import {
 } from "react";
 import styles from "./TagInput.module.css";
 
-// ─── 型定義 ───────────────────────────────────────────────────────────────────
-
 export interface TagSuggestion {
   label: string;
   count: number;
 }
 
 interface TagInputProps {
-  /** 初期タグ */
   initialTags?: string[];
-  /** 候補一覧 */
   suggestions?: TagSuggestion[];
-  /** タグが変化したときのコールバック */
   onChange?: (tags: string[]) => void;
-  /** 入力値が変化したときのコールバック（候補の動的取得に使用） */
   onInputChange?: (value: string) => void;
 }
 
-// ─── 定数 ─────────────────────────────────────────────────────────────────────
-
 const MAX_TAGS = 10;
 const MAX_TAG_LENGTH = 30;
-
-// ─── コンポーネント ────────────────────────────────────────────────────────────
 
 export default function TagInput({
   initialTags = [],
@@ -51,21 +41,16 @@ export default function TagInput({
 
   const isAtLimit = tags.length >= MAX_TAGS;
 
-  // ─── 絞り込み済み候補 ────────────────────────────────────────────────────────
-
   const filteredSuggestions = useMemo(() => {
     return suggestions.filter((s) => !tags.includes(s.label));
   }, [suggestions, tags]);
 
-  // 「新規作成」を候補に追加するか
   const showCreateOption =
     inputValue.trim() !== "" &&
     !tags.includes(inputValue.trim()) &&
     !suggestions.some(
       (s) => s.label.toLowerCase() === inputValue.trim().toLowerCase()
     );
-
-  // ─── タグ追加ロジック ─────────────────────────────────────────────────────────
 
   const addTag = useCallback(
     (raw: string) => {
@@ -96,8 +81,6 @@ export default function TagInput({
     [tags, onChange, onInputChange]
   );
 
-  // ─── タグ削除ロジック ─────────────────────────────────────────────────────────
-
   const removeTag = useCallback(
     (index: number) => {
       const next = tags.filter((_, i) => i !== index);
@@ -107,8 +90,6 @@ export default function TagInput({
     },
     [tags, onChange]
   );
-
-  // ─── キーボードイベント ───────────────────────────────────────────────────────
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLInputElement>) => {
@@ -156,8 +137,6 @@ export default function TagInput({
     ]
   );
 
-  // ─── 入力変更 ─────────────────────────────────────────────────────────────────
-
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
@@ -175,8 +154,6 @@ export default function TagInput({
     [addTag, onInputChange]
   );
 
-  // ─── フォーカス / ブラー ──────────────────────────────────────────────────────
-
   const handleFocus = useCallback(() => {
     setIsOpen(true);
   }, []);
@@ -190,8 +167,6 @@ export default function TagInput({
     }, 150);
   }, []);
 
-  // ─── 候補クリック ─────────────────────────────────────────────────────────────
-
   const handleSuggestionClick = useCallback(
     (label: string) => {
       addTag(label);
@@ -201,8 +176,6 @@ export default function TagInput({
     [addTag]
   );
 
-  // ─── レンダリング ─────────────────────────────────────────────────────────────
-
   const showDropdown =
     isOpen &&
     !isAtLimit &&
@@ -210,8 +183,6 @@ export default function TagInput({
 
   return (
     <div className={styles.wrapper} ref={containerRef}>
-      <span className={styles.label}>タグ</span>
-
       <div
         className={styles.field}
         onClick={() => inputRef.current?.focus()}
