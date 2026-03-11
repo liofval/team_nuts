@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   useCommentsQuery,
   useCreateCommentMutation,
@@ -10,6 +10,10 @@ import {
 import CommentThread from "./CommentThread";
 import "./CommentSidebar.css";
 
+const MIN_WIDTH = 200;
+const MAX_WIDTH = 600;
+const DEFAULT_WIDTH = 300;
+
 type Props = {
   editor: Editor | null;
   pressReleaseId: number;
@@ -18,11 +22,13 @@ type Props = {
 
 export default function CommentSidebar({ editor, pressReleaseId, onSave }: Props) {
   const [isOpen, setIsOpen] = useState(true);
+  const [width, setWidth] = useState(DEFAULT_WIDTH);
   const [showResolved, setShowResolved] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [addError, setAddError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isDragging = useRef(false);
   const { data: comments, isPending } = useCommentsQuery(pressReleaseId);
   const { mutate: createComment } = useCreateCommentMutation(pressReleaseId);
   const { mutate: resolveComment } = useResolveCommentMutation(pressReleaseId);
@@ -34,6 +40,34 @@ export default function CommentSidebar({ editor, pressReleaseId, onSave }: Props
       textareaRef.current.focus();
     }
   }, [isAdding]);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDragging.current) return;
+    const newWidth = window.innerWidth - e.clientX;
+    setWidth(Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newWidth)));
+  }, []);
+
+  const handleMouseUp = useCallback(() => {
+    isDragging.current = false;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [handleMouseMove, handleMouseUp]);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+  };
 
   if (!editor) return null;
 
@@ -80,19 +114,23 @@ export default function CommentSidebar({ editor, pressReleaseId, onSave }: Props
   if (!isOpen) {
     return (
       <button
-        className="commentSidebarToggle"
+        className="commentSidebarFab"
         onClick={() => setIsOpen(true)}
+        title="コメントを開く"
       >
-        <span className="commentSidebarToggle__label">コメント</span>
+        <svg className="commentSidebarFab__icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" />
+        </svg>
         {totalCount > 0 && (
-          <span className="commentSidebarToggle__badge">{totalCount}</span>
+          <span className="commentSidebarFab__badge">{totalCount}</span>
         )}
       </button>
     );
   }
 
   return (
-    <div className="commentSidebar">
+    <div className="commentSidebar" style={{ width }}>
+      <div className="commentSidebarResizeHandle" onMouseDown={handleDragStart} />
       <div className="commentSidebarHeader">
         <h3 className="commentSidebarTitle">コメント</h3>
         <div className="commentSidebarHeaderActions">
