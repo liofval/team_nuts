@@ -78,11 +78,17 @@
   display: flex;
   flex: 1;
   min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.leftSidebarTabs::-webkit-scrollbar {
+  display: none;
 }
 
 .leftSidebarTab {
-  flex: 1;
-  padding: 0.6rem 0.4rem;
+  padding: 0.6rem 0.75rem;
   font-size: 0.8rem;
   font-weight: 500;
   color: #666;
@@ -92,6 +98,7 @@
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .leftSidebarTab:hover {
