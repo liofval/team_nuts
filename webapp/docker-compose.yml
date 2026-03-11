@@ -41,7 +41,7 @@ services:
       context: ./frontend/react
     container_name: press-release-frontend
     ports:
-      - "3000:80"
+      - "80:80"
     depends_on:
       - app
     restart: unless-stopped
