@@ -41,6 +41,18 @@
   align-items: center;
 }
 
+.saveButton--unsaved {
+  background-color: #e67e22;
+}
+
+.saveButton--unsaved:hover:not(:disabled) {
+  background-color: #cf6d17;
+}
+
+.saveButton--saved {
+  background-color: #6c757d;
+}
+
 .saveButton {
   padding: 0.5rem 1.5rem;
   font-size: 1rem;

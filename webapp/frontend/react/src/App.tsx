@@ -152,7 +152,7 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
 
   const suggestions = tagItems.map((t) => ({ label: t.name, count: t.count }));
 
-  useAutoSave(editor ?? null, title, save);
+  const saveStatus = useAutoSave(editor ?? null, title, save);
 
   const handleSave = () => {
     if (!editor) return;
@@ -192,11 +192,11 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
 
           <button
             onClick={handleSave}
-            className="saveButton"
+            className={`saveButton saveButton--${saveStatus}`}
             disabled={isSaving}
             type="button"
           >
-            {isSaving ? "保存中..." : "保存"}
+            {isSaving ? "保存中..." : saveStatus === "unsaved" ? "未保存" : saveStatus === "saving" ? "保存中..." : "保存"}
           </button>
         </div>
       </header>
