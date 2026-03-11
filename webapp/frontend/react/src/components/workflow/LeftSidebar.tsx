@@ -3,10 +3,11 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import WritingWorkflow from "./WritingWorkflow";
 import ChatBot from "../chat/ChatBot";
 import { SNSPostPanel } from "../../features/sns-post";
+import { SettingsPanel } from "../../features/settings";
 import type { PressReleaseSummary } from "../../hooks/usePressRelease";
 import "./LeftSidebar.css";
 
-type ActiveTab = "articles" | "workflow" | "chat" | "sns";
+type ActiveTab = "articles" | "workflow" | "chat" | "sns" | "settings";
 
 type Props = {
   editor: Editor | null;
@@ -107,6 +108,9 @@ export default function LeftSidebar({
         <button className="leftSidebarToggle leftSidebarToggleSns" onClick={() => openTab("sns")}>
           SNS投稿
         </button>
+        <button className="leftSidebarToggle leftSidebarToggleSettings" onClick={() => openTab("settings")}>
+          設定
+        </button>
       </div>
     );
   }
@@ -144,6 +148,13 @@ export default function LeftSidebar({
           >
             SNS投稿
           </button>
+          <button
+            ref={activeTab === "settings" ? scrollToTab : undefined}
+            className={`leftSidebarTab ${activeTab === "settings" ? "leftSidebarTabActive" : ""}`}
+            onClick={() => switchTab("settings")}
+          >
+            設定
+          </button>
         </div>
         <button
           className="leftSidebarClose"
@@ -154,7 +165,9 @@ export default function LeftSidebar({
       </div>
 
       <div className={`leftSidebarBody ${activeTab === "chat" || activeTab === "articles" ? "leftSidebarBodyNoScroll" : ""}`}>
-        {activeTab === "sns" ? (
+        {activeTab === "settings" ? (
+          <SettingsPanel />
+        ) : activeTab === "sns" ? (
           <SNSPostPanel
             pressReleaseId={pressReleaseId}
             title={title}

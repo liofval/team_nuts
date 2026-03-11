@@ -1,0 +1,98 @@
+.settingsPanel {
+  padding: 0.5rem 0;
+}
+
+.settingsSection {
+  margin-bottom: 1.2rem;
+}
+
+.settingsSectionTitle {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.settingsBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.settingsInput {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.settingsInput:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+.settingsInput::placeholder {
+  color: #aaa;
+}
+
+.settingsHint {
+  font-size: 0.7rem;
+  color: #888;
+  margin-top: 0.25rem;
+}
+
+.settingsSaveBtn {
+  width: 100%;
+  padding: 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: white;
+  background-color: #007bff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.settingsSaveBtn:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.settingsSaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.settingsMessage {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.settingsMessageSuccess {
+  color: #155724;
+}
+
+.settingsMessageError {
+  color: #721c24;
+}
+
+.settingsDescription {
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding: 0.6rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+}

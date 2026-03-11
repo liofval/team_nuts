@@ -54,6 +54,14 @@
   background-color: #d35400;
 }
 
+.leftSidebarToggleSettings {
+  background-color: #6c757d;
+}
+
+.leftSidebarToggleSettings:hover {
+  background-color: #545b62;
+}
+
 /* ── サイドバー（開いた状態） ── */
 .leftSidebar {
   border-right: 1px solid #e0e0e0;

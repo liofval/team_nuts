@@ -238,6 +238,37 @@ func SavePressReleaseHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	pressRelease.Tags = tagNames2
 
+	// 自動下書き生成: APIキーが設定済みかつ未生成の場合のみ
+	go func() {
+		autoCtx := context.Background()
+		pool := db.GetDB()
+
+		var keyCount int
+		if err := pool.QueryRow(autoCtx,
+			`SELECT COUNT(*) FROM settings WHERE key IN ('x_api_key', 'instagram_api_key') AND value != ''`,
+		).Scan(&keyCount); err != nil || keyCount == 0 {
+			return
+		}
+
+		var draftCount int
+		if err := pool.QueryRow(autoCtx,
+			`SELECT COUNT(*) FROM sns_posts WHERE press_release_id = $1`, id,
+		).Scan(&draftCount); err != nil || draftCount > 0 {
+			return
+		}
+
+		plainText, err := tiptap.GetTextFromJSON(req.Content)
+		if err != nil || len([]rune(plainText)) < 50 {
+			return
+		}
+
+		if _, err := GenerateSNSPosts(autoCtx, int64(id), req.Title, plainText); err != nil {
+			log.Printf("auto-draft: error for press_release_id=%d: %v", id, err)
+		} else {
+			log.Printf("auto-draft: generated SNS drafts for press_release_id=%d", id)
+		}
+	}()
+
 	httputil.RespondWithJSON(w, http.StatusOK, pressRelease)
 }
 
