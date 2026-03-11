@@ -51,18 +51,3 @@ export function useUpdateSNSPostMutation(pressReleaseId: number) {
   });
 }
 
-export function usePublishSNSPostMutation(pressReleaseId: number) {
-  const queryClient = useQueryClient();
-  return useMutation<SNSPost, Error, number>({
-    mutationFn: async (postId) => {
-      const res = await fetch(`${BASE_URL}/sns-posts/${postId}/publish`, {
-        method: "POST",
-      });
-      if (!res.ok) throw new Error("投稿に失敗しました");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [SNS_POSTS_KEY, pressReleaseId] });
-    },
-  });
-}

@@ -11,11 +11,6 @@
   background: white;
 }
 
-.platformPreview--posted {
-  border-color: #28a745;
-  background: #f8fff9;
-}
-
 .platformPreview__header {
   display: flex;
   align-items: center;
@@ -29,16 +24,6 @@
 .platformPreview__label {
   font-weight: 600;
   font-size: 0.95rem;
-}
-
-.platformPreview__badge {
-  margin-left: auto;
-  padding: 2px 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: white;
-  background-color: #28a745;
-  border-radius: 12px;
 }
 
 .platformPreview__content {
@@ -130,22 +115,3 @@
   cursor: not-allowed;
 }
 
-.platformPreview__btn--publish {
-  background-color: #28a745;
-  color: white;
-}
-
-.platformPreview__btn--publish:hover {
-  background-color: #218838;
-}
-
-.platformPreview__btn--publish:disabled {
-  background-color: #6c757d;
-  cursor: not-allowed;
-}
-
-.platformPreview__timestamp {
-  font-size: 0.75rem;
-  color: #6c757d;
-  text-align: right;
-}

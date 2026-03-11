@@ -4,8 +4,7 @@ export type SNSPost = {
   platform: "x" | "instagram";
   content: string;
   char_count: number;
-  status: "draft" | "posted" | "failed";
-  posted_at: string | null;
+  status: string;
   created_at: string;
   updated_at: string;
 };
