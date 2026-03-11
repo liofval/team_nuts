@@ -44,6 +44,83 @@ const snsGeneratePrompt = `あなたはSNSマーケティングの専門家で�
 以下のJSON形式のみを出力し、それ以外のテキストは絶対に含めないでください。
 {"x":"X向けの投稿文","instagram":"Instagram向けの投稿文"}`
 
+// GenerateSNSPosts はOpenAI APIを使ってSNS下書きを生成し、DBに保存する共有関数
+func GenerateSNSPosts(ctx context.Context, pressReleaseID int64, title, plainText string) ([]model.SNSPost, error) {
+	contentRunes := []rune(plainText)
+	if len(contentRunes) > 3000 {
+		contentRunes = contentRunes[:3000]
+	}
+
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("OPENAI_API_KEY is not set")
+	}
+
+	prompt := fmt.Sprintf(snsGeneratePrompt, title, string(contentRunes))
+
+	client := openai.NewClient(option.WithAPIKey(apiKey))
+	completion, err := client.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
+		Model: "gpt-4o-mini",
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage(prompt),
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("OpenAI API error: %w", err)
+	}
+
+	if len(completion.Choices) == 0 {
+		return nil, fmt.Errorf("no response from OpenAI API")
+	}
+
+	outputText := strings.TrimSpace(completion.Choices[0].Message.Content)
+
+	if strings.HasPrefix(outputText, "```json") {
+		outputText = strings.TrimPrefix(outputText, "```json")
+		outputText = strings.TrimSuffix(strings.TrimSpace(outputText), "```")
+		outputText = strings.TrimSpace(outputText)
+	} else if strings.HasPrefix(outputText, "```") {
+		outputText = strings.TrimPrefix(outputText, "```")
+		outputText = strings.TrimSuffix(strings.TrimSpace(outputText), "```")
+		outputText = strings.TrimSpace(outputText)
+	}
+
+	var generated model.GenerateSNSResponse
+	if err := json.Unmarshal([]byte(outputText), &generated); err != nil {
+		return nil, fmt.Errorf("failed to parse LLM response: %w", err)
+	}
+
+	pool := db.GetDB()
+	now := time.Now()
+	var posts []model.SNSPost
+
+	platforms := []struct {
+		name    string
+		content string
+	}{
+		{"x", generated.X},
+		{"instagram", generated.Instagram},
+	}
+
+	for _, p := range platforms {
+		charCount := utf8.RuneCountInString(p.content)
+		var post model.SNSPost
+		err := pool.QueryRow(
+			ctx,
+			`INSERT INTO sns_posts (press_release_id, platform, content, char_count, status, created_at, updated_at)
+			 VALUES ($1, $2, $3, $4, 'draft', $5, $5)
+			 RETURNING id, press_release_id, platform, content, char_count, status, posted_at, created_at, updated_at`,
+			pressReleaseID, p.name, p.content, charCount, now,
+		).Scan(&post.ID, &post.PressReleaseID, &post.Platform, &post.Content, &post.CharCount, &post.Status, &post.PostedAt, &post.CreatedAt, &post.UpdatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("DB insert error: %w", err)
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
+}
+
 // GenerateSNSPostHandler はAIでSNS投稿文を生成する
 // POST /api/press-releases/{id}/sns/generate
 func GenerateSNSPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,88 +142,11 @@ func GenerateSNSPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// 本文を3000文字に制限
-	contentRunes := []rune(req.Content)
-	if len(contentRunes) > 3000 {
-		contentRunes = contentRunes[:3000]
-	}
-
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	if apiKey == "" {
-		log.Printf("GenerateSNSPostHandler: OPENAI_API_KEY is not set")
-		httputil.RespondWithError(w, http.StatusInternalServerError, "LLM_ERROR", "OpenAI API key is not configured")
-		return
-	}
-
-	prompt := fmt.Sprintf(snsGeneratePrompt, req.Title, string(contentRunes))
-
-	client := openai.NewClient(option.WithAPIKey(apiKey))
-	completion, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
-		Model: "gpt-4o-mini",
-		Messages: []openai.ChatCompletionMessageParamUnion{
-			openai.UserMessage(prompt),
-		},
-	})
+	posts, err := GenerateSNSPosts(r.Context(), pressReleaseID, req.Title, req.Content)
 	if err != nil {
-		log.Printf("GenerateSNSPostHandler: OpenAI API error: %v", err)
-		httputil.RespondWithError(w, http.StatusInternalServerError, "LLM_ERROR", "Failed to call OpenAI API")
+		log.Printf("GenerateSNSPostHandler: %v", err)
+		httputil.RespondWithError(w, http.StatusInternalServerError, "LLM_ERROR", "Failed to generate SNS posts")
 		return
-	}
-
-	if len(completion.Choices) == 0 {
-		httputil.RespondWithError(w, http.StatusInternalServerError, "LLM_ERROR", "No response from OpenAI API")
-		return
-	}
-
-	outputText := strings.TrimSpace(completion.Choices[0].Message.Content)
-
-	// コードブロックマーカーを除去
-	if strings.HasPrefix(outputText, "```json") {
-		outputText = strings.TrimPrefix(outputText, "```json")
-		outputText = strings.TrimSuffix(strings.TrimSpace(outputText), "```")
-		outputText = strings.TrimSpace(outputText)
-	} else if strings.HasPrefix(outputText, "```") {
-		outputText = strings.TrimPrefix(outputText, "```")
-		outputText = strings.TrimSuffix(strings.TrimSpace(outputText), "```")
-		outputText = strings.TrimSpace(outputText)
-	}
-
-	var generated model.GenerateSNSResponse
-	if err := json.Unmarshal([]byte(outputText), &generated); err != nil {
-		log.Printf("GenerateSNSPostHandler: failed to parse LLM response: %v\noutput: %s", err, outputText)
-		httputil.RespondWithError(w, http.StatusInternalServerError, "PARSE_ERROR", "Failed to parse LLM response")
-		return
-	}
-
-	// DBに保存
-	pool := db.GetDB()
-	now := time.Now()
-	var posts []model.SNSPost
-
-	platforms := []struct {
-		name    string
-		content string
-	}{
-		{"x", generated.X},
-		{"instagram", generated.Instagram},
-	}
-
-	for _, p := range platforms {
-		charCount := utf8.RuneCountInString(p.content)
-		var post model.SNSPost
-		err := pool.QueryRow(
-			context.Background(),
-			`INSERT INTO sns_posts (press_release_id, platform, content, char_count, status, created_at, updated_at)
-			 VALUES ($1, $2, $3, $4, 'draft', $5, $5)
-			 RETURNING id, press_release_id, platform, content, char_count, status, posted_at, created_at, updated_at`,
-			pressReleaseID, p.name, p.content, charCount, now,
-		).Scan(&post.ID, &post.PressReleaseID, &post.Platform, &post.Content, &post.CharCount, &post.Status, &post.PostedAt, &post.CreatedAt, &post.UpdatedAt)
-		if err != nil {
-			log.Printf("GenerateSNSPostHandler: DB insert error: %v", err)
-			httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to save SNS post")
-			return
-		}
-		posts = append(posts, post)
 	}
 
 	httputil.RespondWithJSON(w, http.StatusCreated, posts)

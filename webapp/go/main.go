@@ -94,6 +94,10 @@ func main() {
 	r.Put("/api/sns-posts/{postId}", handler.UpdateSNSPostHandler)
 	r.Post("/api/sns-posts/{postId}/publish", handler.PublishSNSPostHandler)
 
+	// 設定API
+	r.Get("/api/settings", handler.GetSettingsHandler)
+	r.Put("/api/settings", handler.SaveSettingsHandler)
+
 	// コメントAPI
 	r.Get("/api/press-releases/{id}/comments", handler.ListCommentsHandler)
 	r.Post("/api/press-releases/{id}/comments", handler.CreateCommentHandler)

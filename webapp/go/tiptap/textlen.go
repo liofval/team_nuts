@@ -5,12 +5,11 @@ import (
 	"strings"
 )
 
-// GetTextLengthFromJSON は、フロントの editor.getText().length に寄せた文字数カウントを行います。
-// 方針：TipTap JSONを走査して text を連結し、ブロックノード境界で改行(\n)相当を挿入してカウントします。
-func GetTextLengthFromJSON(contentJSON string) (int, error) {
+// GetTextFromJSON は TipTap JSON からプレーンテキストを抽出します。
+func GetTextFromJSON(contentJSON string) (string, error) {
 	var v any
 	if err := json.Unmarshal([]byte(contentJSON), &v); err != nil {
-		return 0, err
+		return "", err
 	}
 
 	var b strings.Builder
@@ -76,8 +75,14 @@ func GetTextLengthFromJSON(contentJSON string) (int, error) {
 	}
 
 	walk(v, "")
+	return b.String(), nil
+}
 
-	// 改行もカウントする（フロントの editor.getText().length に寄せる）
-	out := b.String()
-	return len([]rune(out)), nil
+// GetTextLengthFromJSON は、フロントの editor.getText().length に寄せた文字数カウントを行います。
+func GetTextLengthFromJSON(contentJSON string) (int, error) {
+	text, err := GetTextFromJSON(contentJSON)
+	if err != nil {
+		return 0, err
+	}
+	return len([]rune(text)), nil
 }
