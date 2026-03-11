@@ -3,6 +3,8 @@
 Hackathon 2026 Spring 向けに開発されたプレスリリースエディターアプリケーションです。
 参加者向けの手順はこの README と `webapp/README.md` に集約しています。
 
+https://www.loom.com/share/49e68cd476064515b92af462c08c2084
+
 ## クイックスタート
 
 ### 1. バックエンド（Docker）を起動
