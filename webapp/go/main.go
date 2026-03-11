@@ -78,6 +78,9 @@ func main() {
 	// タイトル生成API
 	r.Post("/api/generate-title", handler.GenerateTitleHandler)
 
+	// チャットAPI
+	r.Post("/api/chat", handler.ChatHandler)
+
 	// テンプレートAPI
 	r.Get("/api/templates", handler.ListTemplatesHandler)
 	r.Post("/api/templates", handler.CreateTemplateHandler)

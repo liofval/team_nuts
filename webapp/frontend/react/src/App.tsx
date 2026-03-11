@@ -133,7 +133,6 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
     number | null
   >(null);
 
-
   const editor = useEditor({
     extensions: editorExtensions,
     content,
