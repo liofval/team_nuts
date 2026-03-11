@@ -2,7 +2,7 @@
 import { useCallback, useState } from "react";
 import type { TagItem, TagSuggestResponse } from "../types/reference";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+import { BASE_URL } from "../constants";
 
 export function useTagSuggest() {
   const [items, setItems] = useState<TagItem[]>([]);
@@ -11,7 +11,7 @@ export function useTagSuggest() {
   const fetchSuggest = useCallback(async (q: string, limit = 10) => {
     setLoading(true);
     try {
-      const url = new URL(`${API_BASE}/api/v1/tags/suggest`);
+      const url = new URL(`${BASE_URL}/v1/tags/suggest`);
       if (q.trim()) url.searchParams.set("q", q.trim());
       url.searchParams.set("limit", String(limit));
 

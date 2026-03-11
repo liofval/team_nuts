@@ -2,7 +2,7 @@
 import { useCallback, useState } from "react";
 import type { SearchResponse } from "../types/reference";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8080";
+import { BASE_URL } from "../constants";
 
 export function useReferenceSearch() {
   const [data, setData] = useState<SearchResponse | null>(null);
@@ -19,7 +19,7 @@ export function useReferenceSearch() {
     setError(null);
 
     try {
-      const url = new URL(`${API_BASE}/api/v1/search`);
+      const url = new URL(`${BASE_URL}/v1/search`);
 
       const q = params.q?.trim() ?? "";
       if (q) url.searchParams.set("q", q);

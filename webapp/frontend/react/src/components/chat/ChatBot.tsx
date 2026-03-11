@@ -1,5 +1,6 @@
 import type { Editor } from "@tiptap/react";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { BASE_URL } from "../../constants";
 import "./ChatBot.css";
 
 type ChatMessage = {
@@ -122,26 +123,52 @@ export default function ChatBot({ editor }: Props) {
   }, [messages, scrollToBottom]);
 
   const sendMessage = useCallback(
-    (text: string) => {
+    async (text: string) => {
       if (!text.trim() || isLoading) return;
 
       const userMessage: ChatMessage = { role: "user", content: text.trim() };
-      setMessages((prev) => [...prev, userMessage]);
+      const updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages);
       setInput("");
       setIsLoading(true);
 
-      const delay = 500 + Math.random() * 500;
-      setTimeout(() => {
+      try {
+        // 初期メッセージ(index 0)を除外してAPI送信
+        const apiMessages = updatedMessages.slice(1).map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+        const res = await fetch(`${BASE_URL}/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: apiMessages,
+            editor_body: editor?.getText() ?? "",
+          }),
+        });
+
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+        const data = await res.json();
+        const assistantMessage: ChatMessage = {
+          role: "assistant",
+          content: data.content,
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } catch {
+        // API失敗時はダミー応答にフォールバック
         const response = generateResponse(text, editor);
         const assistantMessage: ChatMessage = {
           role: "assistant",
           content: response,
         };
         setMessages((prev) => [...prev, assistantMessage]);
+      } finally {
         setIsLoading(false);
-      }, delay);
+      }
     },
-    [editor, isLoading],
+    [editor, isLoading, messages],
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
