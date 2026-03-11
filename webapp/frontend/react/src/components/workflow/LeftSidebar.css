@@ -46,6 +46,14 @@
   background-color: #5a32a3;
 }
 
+.leftSidebarToggleSns {
+  background-color: #e67e22;
+}
+
+.leftSidebarToggleSns:hover {
+  background-color: #d35400;
+}
+
 /* ── サイドバー（開いた状態） ── */
 .leftSidebar {
   width: 280px;

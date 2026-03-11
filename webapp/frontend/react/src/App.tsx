@@ -158,7 +158,6 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
     content,
   });
 
-  // 追加: reference search 開閉
   const [isReferenceOpen, setIsReferenceOpen] = useState(false);
 
   const bodyCount = useBodyCount(editor);
@@ -207,7 +206,6 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
           <RecruitEditButton className="saveButton" label="リクルート編集" />
           <DocxImport editor={editor ?? null} onImport={handleDocxImport} />
 
-          {/* 追加: 参考記事検索 */}
           <button
             type="button"
             className="saveButton"
@@ -215,7 +213,6 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
           >
             参考記事を検索
           </button>
-
           <button
             onClick={handleSave}
             className={`saveButton saveButton--${saveStatus}`}
@@ -245,6 +242,8 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
             onSelectArticle={onSelectArticle}
             onCreateNew={onCreateNew}
             isCreating={isCreating}
+            pressReleaseId={pressReleaseId}
+            bodyText={editor?.getText() ?? ""}
           />
           <div className="editorWrapper">
             <div className="titleInputWrapper">
@@ -285,7 +284,6 @@ function Page({ pressReleaseId, title: initialTitle, content, tags: initialTags,
         </div>
       </main>
 
-      {/* 追加: Overlay */}
       <ReferenceSearchOverlay
         open={isReferenceOpen}
         onClose={() => setIsReferenceOpen(false)}

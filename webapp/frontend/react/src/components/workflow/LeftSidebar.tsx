@@ -2,10 +2,11 @@ import type { Editor } from "@tiptap/react";
 import { useState } from "react";
 import WritingWorkflow from "./WritingWorkflow";
 import ChatBot from "../chat/ChatBot";
+import { SNSPostPanel } from "../../features/sns-post";
 import type { PressReleaseSummary } from "../../hooks/usePressRelease";
 import "./LeftSidebar.css";
 
-type ActiveTab = "articles" | "workflow" | "chat";
+type ActiveTab = "articles" | "workflow" | "chat" | "sns";
 
 type Props = {
   editor: Editor | null;
@@ -19,6 +20,8 @@ type Props = {
   onSelectArticle: (id: number) => void;
   onCreateNew: () => void;
   isCreating: boolean;
+  pressReleaseId: number;
+  bodyText: string;
 };
 
 export default function LeftSidebar({
@@ -33,6 +36,8 @@ export default function LeftSidebar({
   onSelectArticle,
   onCreateNew,
   isCreating,
+  pressReleaseId,
+  bodyText,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<ActiveTab>("workflow");
@@ -53,6 +58,9 @@ export default function LeftSidebar({
         </button>
         <button className="leftSidebarToggle leftSidebarToggleChat" onClick={() => openTab("chat")}>
           AIチャット
+        </button>
+        <button className="leftSidebarToggle leftSidebarToggleSns" onClick={() => openTab("sns")}>
+          SNS投稿
         </button>
       </div>
     );
@@ -80,6 +88,12 @@ export default function LeftSidebar({
           >
             AIチャット
           </button>
+          <button
+            className={`leftSidebarTab ${activeTab === "sns" ? "leftSidebarTabActive" : ""}`}
+            onClick={() => setActiveTab("sns")}
+          >
+            SNS投稿
+          </button>
         </div>
         <button
           className="leftSidebarClose"
@@ -90,7 +104,13 @@ export default function LeftSidebar({
       </div>
 
       <div className={`leftSidebarBody ${activeTab === "chat" || activeTab === "articles" ? "leftSidebarBodyNoScroll" : ""}`}>
-        {activeTab === "articles" ? (
+        {activeTab === "sns" ? (
+          <SNSPostPanel
+            pressReleaseId={pressReleaseId}
+            title={title}
+            bodyText={bodyText}
+          />
+        ) : activeTab === "articles" ? (
           <div className="articlePanel">
             <div className="articlePanelHeader">
               <button
