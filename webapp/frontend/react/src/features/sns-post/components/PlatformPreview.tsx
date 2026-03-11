@@ -5,9 +5,9 @@ import "./PlatformPreview.css";
 type Props = {
   post: SNSPost;
   onUpdate: (postId: number, content: string) => void;
-  onPublish: (postId: number) => void;
   isUpdating: boolean;
-  isPublishing: boolean;
+  onPublish?: (postId: number) => void;
+  isPublishing?: boolean;
 };
 
 const platformConfig = {
@@ -15,7 +15,7 @@ const platformConfig = {
   instagram: { label: "Instagram", maxChars: 2200, icon: "📷" },
 } as const;
 
-export default function PlatformPreview({ post, onUpdate, onPublish, isUpdating, isPublishing }: Props) {
+export default function PlatformPreview({ post, onUpdate, isUpdating, onPublish, isPublishing }: Props) {
   const [editContent, setEditContent] = useState(post.content);
   const [isEditing, setIsEditing] = useState(false);
   const config = platformConfig[post.platform];
@@ -38,11 +38,7 @@ export default function PlatformPreview({ post, onUpdate, onPublish, isUpdating,
       <div className="platformPreview__header">
         <span className="platformPreview__icon">{config.icon}</span>
         <span className="platformPreview__label">{config.label}</span>
-        {isPosted && (
-          <span className="platformPreview__badge">
-            投稿済み
-          </span>
-        )}
+        {isPosted && <span className="platformPreview__badge">投稿済み</span>}
       </div>
 
       {isEditing ? (
@@ -54,6 +50,12 @@ export default function PlatformPreview({ post, onUpdate, onPublish, isUpdating,
         />
       ) : (
         <div className="platformPreview__content">{post.content}</div>
+      )}
+
+      {isPosted && post.posted_at && (
+        <div className="platformPreview__timestamp">
+          投稿日時: {new Date(post.posted_at).toLocaleString("ja-JP")}
+        </div>
       )}
 
       <div className="platformPreview__footer">
@@ -87,14 +89,14 @@ export default function PlatformPreview({ post, onUpdate, onPublish, isUpdating,
                   編集
                 </button>
               )}
-              {!isPosted && (
+              {!isPosted && onPublish && post.platform === "x" && (
                 <button
                   type="button"
                   className="platformPreview__btn platformPreview__btn--publish"
                   onClick={() => onPublish(post.id)}
                   disabled={isPublishing}
                 >
-                  {isPublishing ? "投稿中..." : "投稿する"}
+                  {isPublishing ? "投稿中..." : "Xに投稿する"}
                 </button>
               )}
             </>
@@ -102,11 +104,6 @@ export default function PlatformPreview({ post, onUpdate, onPublish, isUpdating,
         </div>
       </div>
 
-      {isPosted && post.posted_at && (
-        <div className="platformPreview__timestamp">
-          {new Date(post.posted_at).toLocaleString("ja-JP")}に投稿
-        </div>
-      )}
     </div>
   );
 }

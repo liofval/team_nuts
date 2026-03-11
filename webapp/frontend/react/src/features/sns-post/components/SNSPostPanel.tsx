@@ -36,7 +36,7 @@ export default function SNSPostPanel({ pressReleaseId, title, bodyText }: Props)
           onClick={handleGenerate}
           disabled={generateMutation.isPending}
         >
-          {generateMutation.isPending ? "AIで生成中..." : "AIで投稿文を生成"}
+          {generateMutation.isPending ? "AIで生成中..." : "下書きを作成"}
         </button>
         {generateMutation.isPending && (
           <p className="snsPanel__hint">記事の内容をAIが要約しています...</p>
@@ -52,8 +52,8 @@ export default function SNSPostPanel({ pressReleaseId, title, bodyText }: Props)
             <PlatformPreview
               post={xPost}
               onUpdate={(postId, content) => updateMutation.mutate({ postId, content })}
-              onPublish={(postId) => publishMutation.mutate(postId)}
               isUpdating={updateMutation.isPending}
+              onPublish={(postId) => publishMutation.mutate(postId)}
               isPublishing={publishMutation.isPending}
             />
           )}
@@ -61,9 +61,7 @@ export default function SNSPostPanel({ pressReleaseId, title, bodyText }: Props)
             <PlatformPreview
               post={instaPost}
               onUpdate={(postId, content) => updateMutation.mutate({ postId, content })}
-              onPublish={(postId) => publishMutation.mutate(postId)}
               isUpdating={updateMutation.isPending}
-              isPublishing={publishMutation.isPending}
             />
           )}
         </div>
@@ -72,7 +70,7 @@ export default function SNSPostPanel({ pressReleaseId, title, bodyText }: Props)
       {!hasPosts && !generateMutation.isPending && (
         <div className="snsPanel__empty">
           <p>まだSNS投稿文がありません。</p>
-          <p>「AIで投稿文を生成」ボタンを押して、記事の内容からSNS向けの投稿文を自動生成しましょう。</p>
+          <p>「下書きを作成」ボタンを押して、記事の内容からSNS向けの下書きを自動生成しましょう。</p>
         </div>
       )}
     </div>

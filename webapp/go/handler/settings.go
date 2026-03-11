@@ -20,13 +20,15 @@ func maskKey(value string) string {
 	return strings.Repeat("*", len(runes)-4) + string(runes[len(runes)-4:])
 }
 
+var settingsKeys = []string{"x_api_key", "x_api_secret", "x_access_token", "x_access_secret", "instagram_api_key"}
+
 // GetSettingsHandler は設定を取得する
 // GET /api/settings
 func GetSettingsHandler(w http.ResponseWriter, r *http.Request) {
 	pool := db.GetDB()
 	ctx := context.Background()
 
-	rows, err := pool.Query(ctx, `SELECT key, value FROM settings WHERE key IN ('x_api_key', 'instagram_api_key')`)
+	rows, err := pool.Query(ctx, `SELECT key, value FROM settings WHERE key = ANY($1)`, settingsKeys)
 	if err != nil {
 		log.Printf("GetSettingsHandler: query error: %v", err)
 		httputil.RespondWithError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Internal server error")
@@ -40,12 +42,22 @@ func GetSettingsHandler(w http.ResponseWriter, r *http.Request) {
 		if err := rows.Scan(&key, &value); err != nil {
 			continue
 		}
+		masked := maskKey(value)
 		switch key {
 		case "x_api_key":
-			resp.XAPIKey = maskKey(value)
+			resp.XAPIKey = masked
 			resp.XAPIKeySet = true
+		case "x_api_secret":
+			resp.XAPISecret = masked
+			resp.XAPISecretSet = true
+		case "x_access_token":
+			resp.XAccessToken = masked
+			resp.XAccessTokenSet = true
+		case "x_access_secret":
+			resp.XAccessSecret = masked
+			resp.XAccessSecretSet = true
 		case "instagram_api_key":
-			resp.InstagramAPIKey = maskKey(value)
+			resp.InstagramAPIKey = masked
 			resp.InstagramKeySet = true
 		}
 	}
@@ -70,6 +82,9 @@ func SaveSettingsHandler(w http.ResponseWriter, r *http.Request) {
 		value string
 	}{
 		{"x_api_key", strings.TrimSpace(req.XAPIKey)},
+		{"x_api_secret", strings.TrimSpace(req.XAPISecret)},
+		{"x_access_token", strings.TrimSpace(req.XAccessToken)},
+		{"x_access_secret", strings.TrimSpace(req.XAccessSecret)},
 		{"instagram_api_key", strings.TrimSpace(req.InstagramAPIKey)},
 	}
 
