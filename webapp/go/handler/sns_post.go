@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -16,6 +18,7 @@ import (
 	"press-release-editor/httputil"
 	"press-release-editor/model"
 
+	"github.com/dghubble/oauth1"
 	"github.com/go-chi/chi/v5"
 	openai "github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
@@ -232,7 +235,58 @@ func UpdateSNSPostHandler(w http.ResponseWriter, r *http.Request) {
 	httputil.RespondWithJSON(w, http.StatusOK, post)
 }
 
-// PublishSNSPostHandler はSNS投稿をモック投稿する
+// getSettingValue はDBから設定値を取得する
+func getSettingValue(ctx context.Context, key string) (string, error) {
+	pool := db.GetDB()
+	var value string
+	err := pool.QueryRow(ctx, `SELECT value FROM settings WHERE key = $1`, key).Scan(&value)
+	return value, err
+}
+
+// publishToX はX API v2でツイートを投稿する
+func publishToX(ctx context.Context, content string) error {
+	apiKey, err := getSettingValue(ctx, "x_api_key")
+	if err != nil {
+		return fmt.Errorf("X API Key が設定されていません")
+	}
+	apiSecret, err := getSettingValue(ctx, "x_api_secret")
+	if err != nil {
+		return fmt.Errorf("X API Secret が設定されていません")
+	}
+	accessToken, err := getSettingValue(ctx, "x_access_token")
+	if err != nil {
+		return fmt.Errorf("X Access Token が設定されていません")
+	}
+	accessSecret, err := getSettingValue(ctx, "x_access_secret")
+	if err != nil {
+		return fmt.Errorf("X Access Token Secret が設定されていません")
+	}
+
+	config := oauth1.NewConfig(apiKey, apiSecret)
+	token := oauth1.NewToken(accessToken, accessSecret)
+	httpClient := config.Client(oauth1.NoContext, token)
+
+	body := map[string]string{"text": content}
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	resp, err := httpClient.Post("https://api.twitter.com/2/tweets", "application/json", bytes.NewReader(jsonBody))
+	if err != nil {
+		return fmt.Errorf("X API request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		respBody, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("X API error (status %d): %s", resp.StatusCode, string(respBody))
+	}
+
+	return nil
+}
+
+// PublishSNSPostHandler はSNS投稿を実際に投稿する
 // POST /api/sns-posts/{postId}/publish
 func PublishSNSPostHandler(w http.ResponseWriter, r *http.Request) {
 	postIDStr := chi.URLParam(r, "postId")
@@ -243,11 +297,12 @@ func PublishSNSPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pool := db.GetDB()
+	ctx := context.Background()
 
 	// まず投稿データを取得
 	var post model.SNSPost
 	err = pool.QueryRow(
-		context.Background(),
+		ctx,
 		`SELECT id, press_release_id, platform, content, char_count, status, posted_at, created_at, updated_at
 		 FROM sns_posts WHERE id = $1`,
 		postID,
@@ -262,13 +317,28 @@ func PublishSNSPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// モック投稿（ログ出力のみ）
-	log.Printf("[MOCK SNS] Platform=%s PressReleaseID=%d Content=%s", post.Platform, post.PressReleaseID, post.Content)
+	// プラットフォーム別の投稿処理
+	switch post.Platform {
+	case "x":
+		if err := publishToX(ctx, post.Content); err != nil {
+			log.Printf("PublishSNSPostHandler: X API error postId=%d: %v", postID, err)
+			// ステータスをfailedに更新
+			pool.Exec(ctx, `UPDATE sns_posts SET status = 'failed', updated_at = now() WHERE id = $1`, postID)
+			httputil.RespondWithError(w, http.StatusBadGateway, "PUBLISH_FAILED", err.Error())
+			return
+		}
+	case "instagram":
+		// Instagram投稿は将来対応（現状はモック）
+		log.Printf("[MOCK SNS] Platform=instagram PressReleaseID=%d Content=%s", post.PressReleaseID, post.Content)
+	default:
+		httputil.RespondWithError(w, http.StatusBadRequest, "UNSUPPORTED_PLATFORM", "Unsupported platform")
+		return
+	}
 
 	// ステータスを更新
 	now := time.Now()
 	err = pool.QueryRow(
-		context.Background(),
+		ctx,
 		`UPDATE sns_posts SET status = 'posted', posted_at = $1, updated_at = $1
 		 WHERE id = $2
 		 RETURNING id, press_release_id, platform, content, char_count, status, posted_at, created_at, updated_at`,
